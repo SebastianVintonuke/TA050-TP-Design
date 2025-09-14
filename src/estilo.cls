@@ -11,6 +11,7 @@
 \RequirePackage{arrayjobx}
 \RequirePackage{graphicx}
 \RequirePackage{fancyhdr}
+\setlength{\headheight}{29.49297pt}
 \RequirePackage{lastpage}
 \RequirePackage[document]{ragged2e}
 \RequirePackage{lipsum}
@@ -77,7 +78,7 @@
 
 \renewcommand{\headrulewidth}{1pt}
 \renewcommand{\footrulewidth}{1pt}
-\rhead{\footnotesize \textsc {Trabajo práctico 0\\ Teoría de Algoritmos}} % Trabajo práctico
+\rhead{\footnotesize \textsc {Trabajo práctico Diseño\\ Sistemas Distribuidos I}} % Trabajo práctico
 \lhead{\includegraphics[width=2.5cm]{logo}}
 \cfoot{\small \textsc {Página \thepage\ de \pageref*{LastPage}}}
 
@@ -102,20 +103,15 @@
 \begin{center}
 \includegraphics[width=7cm]{logo}
 \\[1cm]
-	\textsc{\Large Teoría de Algoritmos}\\           % Materia
-	\textsc{\small (75.29) Curso Buchwald - Genender}\\[0.4cm]    % Subtítulo materia
-	{ \huge \bfseries Trabajo Práctico 0 \\ Lineamientos sobre informes}\\[0.3cm]      % Título
+	\textsc{\Large Sistemas Distribuidos I}\\           % Materia
+	\textsc{\small (TA050) Curso Pablo D. Roca}\\[0.4cm]    % Subtítulo materia
+	{ \huge \bfseries Trabajo Práctico Diseño \\ Coffee Shop Analysis}\\[0.3cm]      % Título
 	\andreasline \\[0.2cm]
-	{\large \today  \\[0.4cm]}                          % Fecha
-	\begin{minipage}{0.4\textwidth}
-		\begin{flushleft}
-            \large{Alan Turing \\ 101010}                   % Integrante 1
-		\end{flushleft}
-	\end{minipage}
-	\begin{minipage}{0.4\textwidth}
-		\begin{flushright}
-            \large{Barbara Liskov \\ 111111}                % Integrante 2
-		\end{flushright}
-	\end{minipage}
+	{\large 16 de septiembre de 2025  \\[1cm]}                          % Fecha
+	\begin{flushleft}
+        \large Sebastian Mauricio Vintoñuke \hfill \large 106063 \\[0.3cm]
+        \large Marcelo Agustin Origoni \hfill \large 109903 \\[0.3cm]
+        \large Agustin Pelliciari \hfill \large 108172 \\[0.3cm]
+    \end{flushleft}
  \end{center}
 }

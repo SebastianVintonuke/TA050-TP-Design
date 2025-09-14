@@ -1,0 +1,21 @@
+\section{Alcance}
+
+El sistema tiene como propósito procesar y analizar información de ventas en una cadena de cafés en Malasia.
+
+A través de un diseño distribuido, busca obtener métricas a partir de datos transaccionales, de clientes, tiendas y productos.
+
+Alcance funcional, permite obtener: 
+\begin{itemize}
+    \item Transacciones realizadas entre 2024 y 2025 entre las 06:00 AM y las 11:00 PM con monto total mayor a 15.
+    \item Nombre del producto más vendido y nombre del producto que más ganancias ha generado, para cada mes en 2024 y 2025.
+    \item TPV (Total Payment Value) por cada semestre en 2024 y 2025, para cada sucursal, para transacciones realizadas entre las 06:00 AM y las 11:00 PM.
+    \item Fecha de cumpleaños de los 3 clientes que han hecho más compras entre 2024 y 2025, para cada sucursal.
+\end{itemize}
+
+Alcance no funcional:
+\begin{itemize}
+    \item Optimizado para entornos multicomputadoras.
+    \item Soporta el incremento de los elementos de cómputo para escalar los volúmenes de información a procesar.
+    \item Usa un Middleware para abstraer la comunicación basada en grupos.
+    \item Soportar una única ejecución del procesamiento y provee graceful quit frente a señales SIGTERM.
+\end{itemize}
