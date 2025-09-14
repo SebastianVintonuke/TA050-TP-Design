@@ -1,0 +1,17 @@
+{
+    "files.exclude": {
+        "**/*.atfi": true,
+        "**/*.aux": true,
+        "**/*.bbl": true,
+        "**/*.bcf": true,
+        "**/*.blg": true,
+        "**/*.fdb_latexmk": true,
+        "**/*.fls": true,
+        "**/*.log": true,
+        "**/*.out": true,
+        "**/*.run.xml": true,
+        "**/*.gz": true,
+        "**/*.bcf-SAVE-ERROR": true,
+        "**/*.bbl-SAVE-ERROR": true
+    }
+}
