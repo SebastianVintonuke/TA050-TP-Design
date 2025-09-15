@@ -5,7 +5,7 @@ participant MiddlewareJoin
 participant JoinTaskDTO
 participant ResultsStorage
 
-MiddlewareJoin -> JoinNode : handleTask(task)
+MiddlewareJoin -> JoinNode : handle(task)
 activate JoinNode
 
 JoinNode->JoinNode: execute(task)
@@ -22,27 +22,30 @@ activate JoinTaskDTO
 JoinTaskDTO --> JoinNode : ["lfile1", "lfile2"]
 deactivate JoinTaskDTO
 
-JoinNode-> MiddlewareJoin : streamFiles(["lfile1","lfile2"])
+JoinNode-> MiddlewareJoin : stream_files(["lfile1","lfile2"])
 activate MiddlewareJoin
-MiddlewareJoin -> ResultsStorage: createStream(["lfile1", "lfile2"])
+MiddlewareJoin -> ResultsStorage: create_stream(["lfile1", "lfile2"])
 activate ResultsStorage
-ResultsStorage --> MiddlewareJoin: stream
+ResultsStorage --> MiddlewareJoin: left_join_stream
 deactivate ResultsStorage
-MiddlewareJoin --> JoinNode: stream
+MiddlewareJoin --> JoinNode: left_join_stream
 deactivate MiddlewareJoin
 
 
-JoinNode-> MiddlewareJoin : streamFiles(["rfile1","rfile2"])
+JoinNode-> MiddlewareJoin : stream_files(["rfile1","rfile2"])
 activate MiddlewareJoin
-MiddlewareJoin --> JoinNode: stream2
+MiddlewareJoin --> JoinNode: right_join_stream
 deactivate MiddlewareJoin
 
-JoinNode->JoinNode : joinStreams(stream, stream2)
+JoinNode->JoinNode: join_streams(left_join_stream, right_join_stream)
 
-JoinNode->MiddlewareJoin: saveResult(joined_stream, task.output_file)
+JoinNode->MiddlewareJoin: save_result(joined_stream, task.output_file)
 activate MiddlewareJoin
-MiddlewareJoin -> ResultsStorage: saveStream(stream, file)
-MiddlewareJoin --> JoinNode: 
+MiddlewareJoin -> ResultsStorage: save_stream(stream, file)
+activate ResultsStorage
+ResultsStorage --> MiddlewareJoin:
+deactivate ResultsStorage
+MiddlewareJoin --> JoinNode: return
 deactivate MiddlewareJoin
 deactivate JoinNode
 deactivate JoinNode

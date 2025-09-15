@@ -1,0 +1,54 @@
+@startuml
+
+participant Scheduler
+participant Middleware
+participant PlanStorage
+participant PlanProtocol
+
+
+Middleware->Scheduler: handle_update_plan(event)
+activate Scheduler
+Scheduler->Scheduler: check_plan_status()
+activate Scheduler
+
+Scheduler->Middleware: load_event_plan(event)
+activate Middleware
+
+Middleware -> PlanStorage : load_plan(plan_id)
+activate PlanStorage
+PlanStorage --> Middleware: serialized_plan
+deactivate PlanStorage
+
+Middleware -> PlanProtocol : deserialize(serialized_plan)
+activate PlanProtocol
+PlanProtocol-->Middleware: plan_dto
+deactivate PlanProtocol
+
+Middleware-->Scheduler: plan_dto
+deactivate Middleware
+
+Scheduler -> Scheduler: mark_task_finish(plan_dto, event.task)
+
+
+Scheduler->Middleware: save_plan_data(plan_dto)
+activate Middleware
+
+Middleware -> PlanProtocol : serialize(plan_dto)
+activate PlanProtocol
+PlanProtocol--> Middleware: serialized_plan
+deactivate PlanProtocol
+
+Middleware -> PlanStorage : save_plan(plan_id, serialized_plan)
+activate PlanStorage
+PlanStorage --> Middleware: 
+deactivate PlanStorage
+Middleware --> Scheduler: 
+deactivate Middleware
+
+Scheduler->Scheduler: check_if_step_has_remaining_tasks(plan_dto)
+deactivate Scheduler
+Scheduler -->Middleware: return
+
+deactivate Scheduler
+
+@enduml

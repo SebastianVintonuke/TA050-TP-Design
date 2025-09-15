@@ -9,9 +9,9 @@ participant JoinNode
 activate JoinNode
 activate Scheduler
 
-Scheduler-> Middleware : consumePlanUpdates(handler)
+Scheduler-> Middleware : consume_plan_updates(handler)
 activate Middleware
-JoinNode-> MiddlewareJoin : consumeJoinTasks(handler)
+JoinNode-> MiddlewareJoin : consume_join_tasks(handler)
 activate MiddlewareJoin
 Middleware-->Scheduler: 
 deactivate Middleware
@@ -19,7 +19,7 @@ deactivate Middleware
 MiddlewareJoin-->JoinNode: 
 deactivate MiddlewareJoin
 
-Scheduler-> Middleware : scheduleJoinTask(task)
+Scheduler-> Middleware : schedule_join_task(task)
 activate Middleware
 
 Middleware -> JoinQueue: push(task)
@@ -27,18 +27,18 @@ Middleware -> JoinQueue: push(task)
 Middleware-->Scheduler: 
 deactivate Middleware
 
-JoinQueue -> MiddlewareJoin: notify not empty
+JoinQueue -> MiddlewareJoin: notify_not_empty()
 activate MiddlewareJoin
 
-MiddlewareJoin -> JoinNode : handleTask(joinTask)
+MiddlewareJoin -> JoinNode : handle_task(join_task)
 activate JoinNode
 
 JoinNode->JoinNode: execute(task)
 
-JoinNode->MiddlewareJoin: notifyTaskFinished(task)
+JoinNode->MiddlewareJoin: notify_finished_task(task)
 activate MiddlewareJoin
 MiddlewareJoin -> PlanQueue: push(plan_update)
-MiddlewareJoin --> JoinNode:
+MiddlewareJoin --> JoinNode: 
 deactivate MiddlewareJoin
 
 JoinNode --> MiddlewareJoin: 
@@ -46,18 +46,18 @@ deactivate JoinNode
 deactivate MiddlewareJoin
 
 
-PlanQueue -> Middleware: notify not empty
+PlanQueue -> Middleware: notify_not_empty()
 activate Middleware
 
-Middleware->Scheduler: handleUpdatePlan(event)
+Middleware->Scheduler: handle_update_plan(event)
 activate Scheduler
-Scheduler->Scheduler: checkPlanStatus
+Scheduler->Scheduler: check_plan_status
 
-Scheduler-> Middleware : scheduleSortTask(task)
+Scheduler-> Middleware: schedule_sort_task(task)
 activate Middleware
-Middleware-->Scheduler
+Middleware -> Middleware: push(task)
+Middleware-->Scheduler: return
 deactivate Middleware
-Scheduler --> Middleware
 deactivate Middleware
 deactivate Scheduler
 
