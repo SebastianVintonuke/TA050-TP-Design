@@ -1,2 +1,17 @@
 \section{Arquitectura de Software}
 
+El sistema se basa en una arquitectura mixta. Adopta un modelo cliente-servidor para gestionar la interacción con los usuarios. Internamente, está conformado por múltiples componentes de cómputo que trabajan en conjunto, lo que permite atender los requerimientos de escalabilidad y aprovechar las ventajas de los entornos multicómputo.
+
+\subsection{Interacción con el cliente}
+
+La comunicación entre el cliente y el sistema se basa en un modelo cliente-servidor. El cliente envía una solicitud en la que incluye un operationId, que identifica la consulta a ejecutar, y los argumentos, que corresponden a uno o varios archivos CSV a procesar. El servidor recibe esta petición y responde con un requestId, un identificador único asociado a la consulta.
+
+Más adelante, el cliente utiliza ese requestId para consultar el estado de su solicitud. Esta operación es bloqueante, ya que el cliente debe esperar hasta que el procesamiento haya finalizado para poder acceder a los resultados.
+
+En conjunto, la interacción define un \textbf{protocolo de comunicación asíncrono}, estructurado en dos intercambios de tipo request-reply sincrónicos: el primero para registrar la consulta y obtener el identificador, y el segundo para recuperar los resultados una vez estén disponibles.
+
+\subsection{Interacción entre nodos}
+
+La interacción principal del sistema se establece entre el Scheduler y los nodos de ejecución, responsables de llevar a cabo las distintas etapas de procesamiento que conforman los pipelines.
+
+Esta coordinación se realiza a través de un \textbf{Message-Oriented Middleware (MOM)}, centralizado y basado en un modelo de colas asíncronas de mensajes. En este esquema, cada cola representa una operación específica a ejecutar, como select, project, sort, group by o join.
