@@ -1,0 +1,66 @@
+@startuml
+
+participant Scheduler
+participant Middleware
+participant PlanQueue
+participant JoinQueue
+participant MiddlewareJoin
+participant JoinNode
+activate JoinNode
+activate Scheduler
+
+Scheduler-> Middleware : consumePlanUpdates(handler)
+activate Middleware
+JoinNode-> MiddlewareJoin : consumeJoinTasks(handler)
+activate MiddlewareJoin
+Middleware-->Scheduler: 
+deactivate Middleware
+
+MiddlewareJoin-->JoinNode: 
+deactivate MiddlewareJoin
+
+Scheduler-> Middleware : scheduleJoinTask(task)
+activate Middleware
+
+Middleware -> JoinQueue: push(task)
+
+Middleware-->Scheduler: 
+deactivate Middleware
+
+JoinQueue -> MiddlewareJoin: notify not empty
+activate MiddlewareJoin
+
+MiddlewareJoin -> JoinNode : handleTask(joinTask)
+activate JoinNode
+
+JoinNode->JoinNode: execute(task)
+
+JoinNode->MiddlewareJoin: notifyTaskFinished(task)
+activate MiddlewareJoin
+MiddlewareJoin -> PlanQueue: push(plan_update)
+MiddlewareJoin --> JoinNode:
+deactivate MiddlewareJoin
+
+JoinNode --> MiddlewareJoin: 
+deactivate JoinNode
+deactivate MiddlewareJoin
+
+
+PlanQueue -> Middleware: notify not empty
+activate Middleware
+
+Middleware->Scheduler: handleUpdatePlan(event)
+activate Scheduler
+Scheduler->Scheduler: checkPlanStatus
+
+Scheduler-> Middleware : scheduleSortTask(task)
+activate Middleware
+Middleware-->Scheduler
+deactivate Middleware
+Scheduler --> Middleware
+deactivate Middleware
+deactivate Scheduler
+
+
+
+@enduml

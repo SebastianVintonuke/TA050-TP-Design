@@ -1,0 +1,50 @@
+@startuml
+
+participant JoinNode
+participant MiddlewareJoin
+participant JoinTaskDTO
+participant ResultsStorage
+
+MiddlewareJoin -> JoinNode : handleTask(task)
+activate JoinNode
+
+JoinNode->JoinNode: execute(task)
+activate JoinNode
+
+JoinNode -> JoinTaskDTO: get_right_files()
+activate JoinTaskDTO
+JoinTaskDTO --> JoinNode : ["rfile1", "rfile2"]
+deactivate JoinTaskDTO
+
+
+JoinNode -> JoinTaskDTO: get_left_files()
+activate JoinTaskDTO
+JoinTaskDTO --> JoinNode : ["lfile1", "lfile2"]
+deactivate JoinTaskDTO
+
+JoinNode-> MiddlewareJoin : streamFiles(["lfile1","lfile2"])
+activate MiddlewareJoin
+MiddlewareJoin -> ResultsStorage: createStream(["lfile1", "lfile2"])
+activate ResultsStorage
+ResultsStorage --> MiddlewareJoin: stream
+deactivate ResultsStorage
+MiddlewareJoin --> JoinNode: stream
+deactivate MiddlewareJoin
+
+
+JoinNode-> MiddlewareJoin : streamFiles(["rfile1","rfile2"])
+activate MiddlewareJoin
+MiddlewareJoin --> JoinNode: stream2
+deactivate MiddlewareJoin
+
+JoinNode->JoinNode : joinStreams(stream, stream2)
+
+JoinNode->MiddlewareJoin: saveResult(joined_stream, task.output_file)
+activate MiddlewareJoin
+MiddlewareJoin -> ResultsStorage: saveStream(stream, file)
+MiddlewareJoin --> JoinNode: 
+deactivate MiddlewareJoin
+deactivate JoinNode
+deactivate JoinNode
+
+@enduml
