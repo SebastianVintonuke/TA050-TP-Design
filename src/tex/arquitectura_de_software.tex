@@ -1,2 +1,3 @@
 \section{Arquitectura de Software}
 
+En cuanto a la arquitectura de software se tiene con el usuario una arquitectura cliente-servidor ya que un usuario externo se conecta ya sea para mandar una request para procesar archivos o para pedir resultados. Internamente el sistema distribuido presenta nodos distribuidos que se comunican por medio de Queues con tareas a ejecutar o eventos. Contando con persistencia de datos para planes o para resultados intermedios con el fin de tener resiliencia y ademas reducir el overhead de los mensajes mandados a las queues, y posibles problemas de memoria.

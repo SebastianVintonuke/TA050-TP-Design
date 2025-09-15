@@ -32,22 +32,30 @@
 
 
 
+En cuanto a la conectividad general es interesante observar:
+
 \begin{figure}[H]
     \centering
     \includegraphics[width=1\textwidth]{img/general_queue_connection.png}
     \caption{Diagrama de secuencia, como se conecta/consume eventos por medio de queues}
 \end{figure}
 
+Muestra como el middleware encapsula la conexion con las queues permitiendo cambiar entre, por ejemplo usar RabbitMQ o alguna otra implementacion de Queues. Se observa que se mantiene la idea general de suscribirse a la queue y handlear mensajes por medio de un callback. 
 
+Entrando en algo mas en detalle en partes importantes en el handleo de mensajes:
 \begin{figure}[H]
     \centering
     \includegraphics[width=1\textwidth]{img/sched_check.png}
-    \caption{Diagrama de secuencia, en que consiste el chequeo del plan del scheduler y como se conecta con el storage}
+    \caption{Diagrama de secuencia, en que consiste el chequeo del plan del scheduler y como se conecta con el storage cuando una tarea termina}
 \end{figure}
 
+El chequeo de estado de plan es lo primero que hace el scheduler cuando tiene que analizar que hacer despues de que algo ocurre con un plan, para esto por medio del Middleware obtiene el plan y en este caso que una tarea termina chequearia posteriormente si puede empezar el siguiente paso. Ya que en un paso del plan puede haber multiples tareas que se estan ejecutando paralelamente. Como podria ser multiples archivos input, como transacciones_1 y transacciones_2, o tambien podrian ser acciones en set de datos distintos, por ejemplo antes de un Join para los archivos de la izquierda o los de la derecha del join. Si se quisiese tener multiples schedulers apareceria la necesidad de que check plan status este protegida por un mutex, ya que al haber multiples tareas dentro de un mismo paso, y multiples schedulers que handlearian el update del plan cuando alguna termina. Puede ser que dos nodos schedulers distintos quieran acceder al mismo plan y modificar por ejemplo las tareas restantes del paso actual del plan.
 
+Por otro lado:
 \begin{figure}[H]
     \centering
     \includegraphics[width=1\textwidth]{img/join_exec.png}
     \caption{Diagrama de secuencia, como hace un nodo para leer archivos de input y escribir su output}
 \end{figure}
+
+Se observa la idea general de como un nodo lee el input del storage por medio del middleware y escribe su resultado en el storage. En el archivo especificado por la task, definido en el plan.
