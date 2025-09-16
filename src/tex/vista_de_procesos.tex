@@ -10,25 +10,31 @@ La planificación de las consultas se diseñó con el objetivo de reducir el vol
     \caption{Diagrama DAG consulta 1°}
 \end{figure}
 
-\begin{figure}[H]
+\begin{figure}[p]
+    \vfill
     \centering
     \includegraphics[width=0.6\textwidth]{img/dag_consulta_2.pdf}
     \caption{Diagrama DAG consulta 2°}
+    \vfill
 \end{figure}
 
-\begin{figure}[H]
+\begin{figure}[p]
+    \vfill
     \centering
     \includegraphics[width=0.5\textwidth]{img/dag_consulta_3.pdf}
     \caption{Diagrama DAG consulta 3°}
+    \vfill
 \end{figure}
 
-\begin{figure}[H]
+\begin{figure}[p]
+    \vfill
     \centering
     \includegraphics[width=0.5\textwidth]{img/dag_consulta_4.pdf}
     \caption{Diagrama DAG consulta 4°}
+    \vfill
 \end{figure}
 
-\newpage
+\clearpage
 
 Ciertas consultas permiten la paralelización de tareas, lo que mejora significativamente el desempeño. En términos generales, tanto las proyecciones como los filtros pueden ejecutarse en paralelo sin inconvenientes. Además, la propia estructura de algunas consultas habilita la paralelización de etapas adicionales.
 
@@ -36,13 +42,15 @@ Un ejemplo concreto se encuentra en la consulta número 2, en la que se requiere
 
 A continuación se presenta un diagrama de actividades que ilustra esta situación:
 
+\vfill
 \begin{figure}[H]
     \centering
     \includegraphics[width=1\textwidth]{img/actividades.pdf}
     \caption{Diagrama de actividades}
 \end{figure}
+\vfill
 
-En cuanto a la conectividad general es interesante observar:
+\clearpage
 
 \begin{figure}[H]
     \centering

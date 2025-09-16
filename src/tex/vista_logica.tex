@@ -1,16 +1,16 @@
 \section{Vista Lógica}
 
-La resolución de consultas se lleva a cabo principalmente mediante la interacción coordinada de los siguientes componentes:
+\subsection{Entidades del dominio del negocio}
 
-\textbf{Planner}: Recibe el identificador de la consulta solicitada por el cliente junto con los archivos asociados. Su función es generar un plan de ejecución acorde con la consulta y optimizado para el procesamiento paralelo cuando sea posible. El plan consiste en una secuencia ordenada de tareas, donde cada tarea define el origen de los datos, la transformación a aplicar y el destino de los resultados.
+\textbf{Consulta (Query)}: Representa una operación a realizar sobre un conjunto determinado de datos. Cada operación es específica y se aplica a un conjunto de datos particular.
 
-\textbf{Scheduler}: Se encarga de recibir los planes y despachar las tareas de forma ordenada y coherente. Además, actualiza el estado de los planes incorporando los resultados parciales de las tareas ya ejecutadas.
+\textbf{Menu Item, Store, Transaction Item, Transaction}: Entidades sobre las que se aplican las consultas.
 
-\textbf{Worker Node}: Ejecuta tareas individuales pertenecientes a un plan. Para ello, accede a los datos de origen, aplica la transformación especificada y devuelve los resultados transformados. Una vez completada la tarea, notifica al scheduler para que actualice el plan correspondiente.
+\subsection{Entidades del dominio del sistema}
 
-\textbf{Middleware}: Gestiona la comunicación entre el scheduler y los nodos de ejecución. Garantiza que el scheduler pueda interactuar de manera transparente y equilibrada con múltiples nodos, y que, a su vez, los nodos puedan informar al scheduler sobre la finalización de sus tareas.
+\textbf{Plan de Ejecución (Execution Plan)}: Representa la secuencia de tareas que deben ejecutarse para resolver una consulta. Algunas tareas pueden ejecutarse en paralelo o en un orden específico según la optimización.
 
-\textbf{Intermediate Results}: Almacenamiento persistente que conserva los resultados intermedios del procesamiento. Este componente aporta resiliencia ante fallos, permitiendo reanudar o recomponer la ejecución en caso de interrupciones.
+\textbf{Tarea (Task)}: Representa una transformación que un nodo debe realizar sobre uno o varios conjuntos de datos. Estas transformaciones pueden ser: Select, Project, Sort, Group by y Join. Cada tarea contiene la operación a ejecutar, la ubicación de los datos de origen y la ubicación de destino donde se almacenará el resultado.
 
 \begin{figure}[H]
     \centering
