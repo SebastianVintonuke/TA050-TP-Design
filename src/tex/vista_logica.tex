@@ -1,16 +1,16 @@
 \section{Vista Lógica}
 
 La resolución de consultas se lleva a cabo principalmente mediante la interacción coordinada de los siguientes componentes:
-
-\textbf{Planner}: Recibe el identificador de la consulta solicitada por el cliente junto con los archivos asociados. Su función es generar un plan de ejecución acorde con la consulta y optimizado para el procesamiento paralelo cuando sea posible. El plan consiste en una secuencia ordenada de tareas, donde cada tarea define el origen de los datos, la transformación a aplicar y el destino de los resultados.
-
-\textbf{Scheduler}: Se encarga de recibir los planes y despachar las tareas de forma ordenada y coherente. Además, actualiza el estado de los planes incorporando los resultados parciales de las tareas ya ejecutadas.
-
-\textbf{Worker Node}: Ejecuta tareas individuales pertenecientes a un plan. Para ello, accede a los datos de origen, aplica la transformación especificada y devuelve los resultados transformados. Una vez completada la tarea, notifica al scheduler para que actualice el plan correspondiente.
+Planner, Scheduler y working nodes, todos estos en el paquete de business logic, a la vez estan:
 
 \textbf{Middleware}: Gestiona la comunicación entre el scheduler y los nodos de ejecución. Garantiza que el scheduler pueda interactuar de manera transparente y equilibrada con múltiples nodos, y que, a su vez, los nodos puedan informar al scheduler sobre la finalización de sus tareas.
 
-\textbf{Intermediate Results}: Almacenamiento persistente que conserva los resultados intermedios del procesamiento. Este componente aporta resiliencia ante fallos, permitiendo reanudar o recomponer la ejecución en caso de interrupciones.
+\textbf{Result Storage}: Almacenamiento persistente que conserva los resultados intermedios del procesamiento. Este componente aporta resiliencia ante fallos, permitiendo reanudar o recomponer la ejecución en caso de interrupciones.
+
+\textbf{Plan Storage}: Almacenamiento persistente que conserva el estado de progreso en el plan definido para una query, esto aporta resiliencia a fallos para no tener que volver a empezar el plan devuelta ante fallas.
+
+
+\textbf{Routing}: El subpaquete de routing se encarga de encapsular la comunicacion, que va a ser por medio de produccion o consumo de mensajes de queues. Para esto se podria usar rabbitMQ o alguna otra solucion. El middleware se encarga de encapsular la logica de conexion o consumo de estos mensajes.
 
 \begin{figure}[H]
     \centering

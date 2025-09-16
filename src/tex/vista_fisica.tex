@@ -1,5 +1,13 @@
 \section{Vista Física}
 
+Explicando los componentes mas importantes del sistema:
+
+\textbf{Planner}: Recibe el identificador de la consulta solicitada por el cliente junto con los archivos asociados. Su función es generar un plan de ejecución acorde con la consulta y optimizado para el procesamiento paralelo cuando sea posible. El plan consiste en una secuencia ordenada de tareas, donde cada tarea define el origen de los datos, la transformación a aplicar y el destino de los resultados.
+
+\textbf{Scheduler}: Se encarga de recibir los planes y despachar las tareas de forma ordenada y coherente. Además, actualiza el estado de los planes incorporando los resultados parciales de las tareas ya ejecutadas. Se decidio por el momento no hacer escalable el scheduler, para evitar race conditions en el acceso del storage de planes.
+
+\textbf{Worker Node}: Ejecuta tareas individuales pertenecientes a un plan. Esto incluye todos los nodos SelectNode, JoinNode, etc. Estos, acceden a los datos de origen, aplica la transformación especificada y devuelve los resultados transformados, para las acciones I/O como se observa es por medio de los intermediate results storage, para no mandar por los mensajes los archivos. Ademas, una vez completada la tarea, notifica al scheduler para que actualice el plan correspondiente.
+
 \begin{figure}[H]
     \centering
     \includegraphics[width=1\textwidth]{img/robustez.pdf}
