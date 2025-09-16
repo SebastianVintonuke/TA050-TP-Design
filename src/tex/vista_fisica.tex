@@ -1,13 +1,33 @@
 \section{Vista Física}
 
+La resolución de consultas se lleva a cabo principalmente mediante la interacción coordinada de los siguientes componentes:
+
+\textbf{Planner}: Recibe el identificador de la consulta solicitada por el cliente junto con los archivos asociados. Su función es generar un plan de ejecución acorde con la consulta y optimizado para el procesamiento paralelo cuando sea posible. El plan consiste en una secuencia ordenada de tareas, donde cada tarea define el origen de los datos, la transformación a aplicar y el destino de los resultados.
+
+\textbf{Scheduler}: Se encarga de recibir los planes y despachar las tareas de forma ordenada y coherente. Además, actualiza el estado de los planes incorporando los resultados parciales de las tareas ya ejecutadas.
+
+\textbf{Worker Node}: Ejecuta tareas individuales pertenecientes a un plan. Para ello, accede a los datos de origen, aplica la transformación especificada y devuelve los resultados transformados. Una vez completada la tarea, notifica al scheduler para que actualice el plan correspondiente.
+
+\textbf{Middleware}: Gestiona la comunicación entre el scheduler y los nodos de ejecución. Garantiza que el scheduler pueda interactuar de manera transparente y equilibrada con múltiples nodos, y que, a su vez, los nodos puedan informar al scheduler sobre la finalización de sus tareas.
+
+\textbf{Intermediate Results}: Almacenamiento persistente que conserva los resultados intermedios del procesamiento. Este componente aporta resiliencia ante fallos, permitiendo reanudar o recomponer la ejecución en caso de interrupciones.
+
+\vfill
 \begin{figure}[H]
     \centering
     \includegraphics[width=1\textwidth]{img/robustez.pdf}
     \caption{Diagrama de robustez}
 \end{figure}
+\vfill
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=1\textwidth]{img/despliegue.pdf}
     \caption{Diagrama de despliegue}
 \end{figure}
+
+En este segundo diagrama se evidencia cómo el sistema escala el volumen de información incorporando nodos de procesamiento adicionales (Worker Nodes), lo que habilita la paralelización de cada operación del pipeline, en caso de que sea posible. 
+
+En este esquema, el Middleware cumple un rol central al intermediar entre el Scheduler y los nodos de procesamiento, administrando colas de trabajo y delegando su trabajo generando una especie de balanceo de carga, estas dos caracteristicas en conjunto garantizan una orquestación eficiente y confiable de las consultas.
+
+Finalmente, el diagrama detalla con qué entidades interactúa cada almacenamiento persistente: el Plan Storage conserva el estado y el avance de los planes, mientras que Intermediate Results persiste resultados parciales y checkpoints; ambos habilitan tolerancia a fallos y recuperacion sin reprocesamientos innecesarios.
