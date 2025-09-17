@@ -1,0 +1,58 @@
+@startuml
+
+participant FilterNode
+participant Middleware
+participant TypeHandler
+participant GroupbyQueue
+participant Middleware as MiddlewareGroupBy
+participant GroupbyNode
+activate GroupbyNode
+activate FilterNode
+
+FilterNode-> Middleware : consumeFilterTasks(handler)
+activate Middleware
+GroupbyNode-> MiddlewareGroupBy : consumeGroupbyTasks(handler, indice)
+activate MiddlewareGroupBy
+Middleware-->FilterNode: 
+deactivate Middleware
+
+MiddlewareGroupBy-->GroupbyNode: 
+deactivate MiddlewareGroupBy
+
+
+Middleware -> FilterNode: handleFilter(task)
+activate FilterNode
+activate Middleware
+
+FilterNode-> FilterNode: getHandler(task.type_query)
+FilterNode-> TypeHandler : exec(task.data)
+activate TypeHandler
+TypeHandler --> FilterNode: task_output
+deactivate TypeHandler
+
+FilterNode -> Middleware: sendOut(task_output.query_id, task_output)
+activate Middleware
+
+Middleware->Middleware: hash(key)
+Middleware -> GroupbyQueue: push_to(hashed_id, task_output)
+
+Middleware -->FilterNode: 
+deactivate Middleware
+FilterNode --> Middleware :
+deactivate FilterNode
+deactivate Middleware
+
+
+GroupbyQueue -> MiddlewareGroupBy: notify not empty
+activate MiddlewareGroupBy
+
+MiddlewareGroupBy -> GroupbyNode : handleTask(task)
+activate GroupbyNode
+
+GroupbyNode->GroupbyNode: execute(task)
+GroupbyNode--> MiddlewareGroupBy :
+deactivate MiddlewareGroupBy
+deactivate GroupbyNode
+
+
+@enduml
