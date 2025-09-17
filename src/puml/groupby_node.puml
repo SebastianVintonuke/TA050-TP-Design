@@ -1,0 +1,48 @@
+@startuml
+
+control GroupbyNode
+participant Middleware
+participant TypeHandler
+queue TopKQueue
+control TopKNode
+
+activate TopKNode
+activate GroupbyNode
+
+Middleware -> GroupbyNode: handle(task)
+activate GroupbyNode
+activate Middleware
+
+GroupbyNode-> GroupbyNode: get_handler(task.type_query)
+GroupbyNode-> TypeHandler : exec(task.data)
+activate TypeHandler
+TypeHandler --> GroupbyNode: (task_output, hash_key)
+deactivate TypeHandler
+
+GroupbyNode -> Middleware: send_output(hash_key, task_output)
+activate Middleware
+
+
+Middleware->Middleware: hash(hash_key)
+Middleware -> TopKQueue: push_to(hashed_key, task_output)
+
+Middleware -->GroupbyNode: 
+deactivate Middleware
+GroupbyNode --> Middleware: return
+deactivate GroupbyNode
+deactivate Middleware
+
+
+TopKQueue -> Middleware: notify_not_empty
+activate Middleware
+
+Middleware -> TopKNode : handle(task)
+activate TopKNode
+
+TopKNode->TopKNode: exec(task)
+TopKNode--> Middleware: return
+deactivate Middleware
+deactivate TopKNode
+
+
+@enduml

@@ -1,0 +1,31 @@
+@startuml
+
+control JoinNode
+participant Middleware
+participant TypeHandler
+
+activate JoinNode
+
+Middleware -> JoinNode: handle(task)
+activate JoinNode
+activate Middleware
+
+JoinNode-> JoinNode: get_handler(task.type_query)
+JoinNode-> TypeHandler : exec(task.data)
+activate TypeHandler
+
+TypeHandler->Middleware: mark_partition_end(task.query_id, task.partition)
+activate Middleware
+Middleware --> TypeHandler : true 
+deactivate Middleware
+
+alt All partitions reached EOF
+    TypeHandler -> TypeHandler : start_join()
+    TypeHandler --> JoinNode: task_output
+else Partitions left to process
+    TypeHandler --> JoinNode : None
+end
+deactivate TypeHandler
+deactivate JoinNode
+
+@enduml
