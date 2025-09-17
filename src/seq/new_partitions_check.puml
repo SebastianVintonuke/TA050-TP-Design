@@ -1,58 +1,31 @@
 @startuml
 
-participant FilterNode
+participant JoinNode
 participant Middleware
 participant TypeHandler
-participant GroupbyQueue
-participant Middleware as MiddlewareGroupBy
-participant GroupbyNode
-activate GroupbyNode
-activate FilterNode
 
-FilterNode-> Middleware : consumeFilterTasks(handler)
-activate Middleware
-GroupbyNode-> MiddlewareGroupBy : consumeGroupbyTasks(handler, indice)
-activate MiddlewareGroupBy
-Middleware-->FilterNode: 
-deactivate Middleware
+activate JoinNode
 
-MiddlewareGroupBy-->GroupbyNode: 
-deactivate MiddlewareGroupBy
-
-
-Middleware -> FilterNode: handleFilter(task)
-activate FilterNode
+Middleware -> JoinNode: handle(task)
+activate JoinNode
 activate Middleware
 
-FilterNode-> FilterNode: getHandler(task.type_query)
-FilterNode-> TypeHandler : exec(task.data)
+JoinNode-> JoinNode: getHandler(task.type_query)
+JoinNode-> TypeHandler : exec(task.data)
 activate TypeHandler
-TypeHandler --> FilterNode: task_output
-deactivate TypeHandler
 
-FilterNode -> Middleware: sendOut(task_output.query_id, task_output)
+TypeHandler->Middleware: markPartitionEnd(task.query_id, task.partition)
 activate Middleware
-
-Middleware->Middleware: hash(key)
-Middleware -> GroupbyQueue: push_to(hashed_id, task_output)
-
-Middleware -->FilterNode: 
-deactivate Middleware
-FilterNode --> Middleware :
-deactivate FilterNode
+Middleware --> TypeHandler : true 
 deactivate Middleware
 
-
-GroupbyQueue -> MiddlewareGroupBy: notify not empty
-activate MiddlewareGroupBy
-
-MiddlewareGroupBy -> GroupbyNode : handleTask(task)
-activate GroupbyNode
-
-GroupbyNode->GroupbyNode: execute(task)
-GroupbyNode--> MiddlewareGroupBy :
-deactivate MiddlewareGroupBy
-deactivate GroupbyNode
-
+alt All partitions reached EOF
+    TypeHandler -> TypeHandler : startJoin()
+    TypeHandler --> JoinNode: task_output
+else Partitions left
+    TypeHandler --> JoinNode : None
+end
+deactivate TypeHandler
+deactivate JoinNode
 
 @enduml

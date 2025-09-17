@@ -1,58 +1,48 @@
 @startuml
 
-participant FilterNode
+participant GroupbyNode
 participant Middleware
 participant TypeHandler
-participant GroupbyQueue
-participant Middleware as MiddlewareGroupBy
-participant GroupbyNode
+participant TopKQueue
+participant Middleware as MiddlewareTopK
+participant TopKNode
+activate TopKNode
 activate GroupbyNode
-activate FilterNode
 
-FilterNode-> Middleware : consumeFilterTasks(handler)
-activate Middleware
-GroupbyNode-> MiddlewareGroupBy : consumeGroupbyTasks(handler, indice)
-activate MiddlewareGroupBy
-Middleware-->FilterNode: 
-deactivate Middleware
-
-MiddlewareGroupBy-->GroupbyNode: 
-deactivate MiddlewareGroupBy
-
-
-Middleware -> FilterNode: handleFilter(task)
-activate FilterNode
+Middleware -> GroupbyNode: handle(task)
+activate GroupbyNode
 activate Middleware
 
-FilterNode-> FilterNode: getHandler(task.type_query)
-FilterNode-> TypeHandler : exec(task.data)
+GroupbyNode-> GroupbyNode: getHandler(task.type_query)
+GroupbyNode-> TypeHandler : exec(task.data)
 activate TypeHandler
-TypeHandler --> FilterNode: task_output
+TypeHandler --> GroupbyNode: (task_output, hash_key)
 deactivate TypeHandler
 
-FilterNode -> Middleware: sendOut(task_output.query_id, task_output)
+GroupbyNode -> Middleware: sendOut(hash_key, task_output)
 activate Middleware
 
-Middleware->Middleware: hash(key)
-Middleware -> GroupbyQueue: push_to(hashed_id, task_output)
 
-Middleware -->FilterNode: 
+Middleware->Middleware: hash(hash_key)
+Middleware -> TopKQueue: push_to(hashed_key, task_output)
+
+Middleware -->GroupbyNode: 
 deactivate Middleware
-FilterNode --> Middleware :
-deactivate FilterNode
-deactivate Middleware
-
-
-GroupbyQueue -> MiddlewareGroupBy: notify not empty
-activate MiddlewareGroupBy
-
-MiddlewareGroupBy -> GroupbyNode : handleTask(task)
-activate GroupbyNode
-
-GroupbyNode->GroupbyNode: execute(task)
-GroupbyNode--> MiddlewareGroupBy :
-deactivate MiddlewareGroupBy
+GroupbyNode --> Middleware :
 deactivate GroupbyNode
+deactivate Middleware
+
+
+TopKQueue -> MiddlewareTopK: notify not empty
+activate MiddlewareTopK
+
+MiddlewareTopK -> TopKNode : handleTask(task)
+activate TopKNode
+
+TopKNode->TopKNode: execute(task)
+TopKNode--> MiddlewareTopK :
+deactivate MiddlewareTopK
+deactivate TopKNode
 
 
 @enduml
