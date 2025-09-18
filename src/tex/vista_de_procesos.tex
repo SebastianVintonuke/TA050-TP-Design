@@ -1,70 +1,33 @@
+\clearpage
+
 \section{Vista de Procesos}
 
-La resolución de consultas se modeló siguiendo los esquemas del álgebra relacional, ampliamente utilizado en motores como SQL. Esta decisión permite aprovechar un lenguaje de dominio ya conocido y, al mismo tiempo, disponer de un modelo extensible que facilite la incorporación de nuevos tipos de consultas.
-
-La planificación de las consultas se diseñó con el objetivo de reducir el volumen de datos lo antes posible. Para ello, se aplican en primer lugar las proyecciones, eliminando las columnas irrelevantes, y los selects, descartando las filas que no cumplen los criterios de filtrado. Este enfoque no solo optimiza la ejecución al minimizar la cantidad de datos procesados en las etapas posteriores, sino que además reduce la complejidad de operaciones más costosas como sort, group by y join.
+La planificación de las consultas se diseñó con el objetivo de reducir el volumen de datos lo antes posible. Para ello, se aplican en primer lugar las proyecciones, eliminando las columnas irrelevantes, y los selects, descartando las filas que no cumplen los criterios de filtrado. Este enfoque no solo optimiza la ejecución al minimizar la cantidad de datos procesados en las etapas posteriores, sino que además reduce la complejidad de operaciones más costosas como group by y join.
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.2\textwidth]{img/dag_consulta_1.pdf}
-    \caption{Diagrama DAG consulta 1°}
+    \includegraphics[width=1\textwidth]{img/DAG.pdf}
+    \caption{Diagrama DAG: Planificación de consultas}
 \end{figure}
 
-\begin{figure}[p]
-    \vfill
-    \centering
-    \includegraphics[width=0.6\textwidth]{img/dag_consulta_2.pdf}
-    \caption{Diagrama DAG consulta 2°}
-    \vfill
-\end{figure}
+Ciertas tareas se pueden realizar en paralelo, por ejemplo la selección puede dividirse entre varios nodos ya que no es una operación que requiere de la totalidad de los datos para resolverse, a continuación se muestra como dos nodos de selección trabajan en paralelo.
 
-\begin{figure}[p]
-    \vfill
-    \centering
-    \includegraphics[width=0.5\textwidth]{img/dag_consulta_3.pdf}
-    \caption{Diagrama DAG consulta 3°}
-    \vfill
-\end{figure}
-
-\begin{figure}[p]
-    \vfill
-    \centering
-    \includegraphics[width=0.5\textwidth]{img/dag_consulta_4.pdf}
-    \caption{Diagrama DAG consulta 4°}
-    \vfill
-\end{figure}
-
-\clearpage
-
-Ciertas consultas permiten la paralelización de tareas, lo que mejora significativamente el desempeño. En términos generales, tanto las proyecciones como los filtros pueden ejecutarse en paralelo sin inconvenientes. Además, la propia estructura de algunas consultas habilita la paralelización de etapas adicionales.
-
-Un ejemplo concreto se encuentra en la consulta número 2, en la que se requieren dos resultados distintos: uno ordenado por ganancia y otro por unidades vendidas. En este caso, es posible paralelizar la ejecución de ambos sorts, lo que permite aprovechar mejor los recursos de cómputo y reducir el tiempo total de procesamiento.
-
-A continuación se presenta un diagrama de actividades que ilustra esta situación:
-
-\vfill
 \begin{figure}[H]
     \centering
     \includegraphics[width=1\textwidth]{img/actividades.pdf}
-    \caption{Diagrama de actividades}
+    \caption{Diagrama de actividades: Selección paralela}
 \end{figure}
-\vfill
-
-\clearpage
-
-Entrando en algo mas en detalle en partes importantes en el manejo y procesamiento de los nodos:
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=1\textwidth]{img/filter_node.png}
-    \caption{Diagrama de secuencia: FilterNode}
+    \caption{Diagrama de secuencia: Filter Node}
 \end{figure}
-
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=1\textwidth]{img/groupby_node.png}
-    \caption{Diagrama de secuencia: GroupbyNode}
+    \caption{Diagrama de secuencia: GroupBy Node}
 \end{figure}
 
 El siguiente esquema mostramos el manejo de la particion de los archivos CSV

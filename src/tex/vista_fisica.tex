@@ -1,33 +1,61 @@
+\clearpage
+
 \section{Vista Física}
 
-La resolución de consultas se lleva a cabo principalmente mediante la interacción coordinada de los siguientes componentes:
+\subsection{Topología compartida}
 
-\textbf{Planner}: Recibe el identificador de la consulta solicitada por el cliente junto con los archivos asociados. Su función es generar un plan de ejecución acorde con la consulta y optimizado para el procesamiento paralelo cuando sea posible. El plan consiste en una secuencia ordenada de tareas, donde cada tarea define el origen de los datos, la transformación a aplicar y el destino de los resultados.
+La \textbf{topología del sistema} se define a partir de los distintos pipelines necesarios para resolver cada consulta. Todas las consultas comparten una sección común formada por tres componentes principales.
 
-\textbf{Scheduler}: Se encarga de recibir los planes y despachar las tareas de forma ordenada y coherente. Además, actualiza el estado de los planes incorporando los resultados parciales de las tareas ya ejecutadas.
+\textbf{Servidor}: Actúa como balanceador de carga: cuando un usuario envía una consulta, lo conecta con un Dispatcher; en cambio, cuando el usuario solicita acceder a los resultados, el servidor se encarga de devolverlos una vez que la ejecución ha finalizado.
 
-\textbf{Worker Node}: Ejecuta tareas individuales pertenecientes a un plan. Para ello, accede a los datos de origen, aplica la transformación especificada y devuelve los resultados transformados. Una vez completada la tarea, notifica al scheduler para que actualice el plan correspondiente.
+\textbf{Resultados}: Los resultados de cada consulta se almacenan en disco y se asocian al ID del cliente que la originó, lo que permite acceder a ellos de manera asincrónica en cualquier momento posterior.
 
-\textbf{Middleware}: Gestiona la comunicación entre el scheduler y los nodos de ejecución. Garantiza que el scheduler pueda interactuar de manera transparente y equilibrada con múltiples nodos, y que, a su vez, los nodos puedan informar al scheduler sobre la finalización de sus tareas.
+\textbf{Dispatcher}: recibe los datos, aplica las validaciones necesarias y transforma su formato cuando es conveniente. Además, se encarga de planificar el pipeline de nodos y de reenviar los datos a través de este para su procesamiento.
 
-\textbf{Intermediate Results}: Almacenamiento persistente que conserva los resultados intermedios del procesamiento. Este componente aporta resiliencia ante fallos, permitiendo reanudar o recomponer la ejecución en caso de interrupciones.
+\subsection{Topología entre consultas}
 
-\vfill
+Para explicar la topología del sistema, la organizamos en función de los distintos pipelines asociados a cada consulta. Sin embargo, es importante destacar que como muchos de los datos iniciales y de los resultados parciales son compartidos por múltiples consultas. Para optimizar la resolución y evitar cálculos redundantes, los nodos pueden retransmitir sus resultados a varios pipelines de manera simultánea, lo que permite que diferentes consultas reutilicen la misma información.
+
+\subsection{Topología por consulta}
+
+En la consulta 1, cada \textbf{Select Node} es capaz de ejecutar las tres selecciones requeridas. Para acelerar la resolución, es posible utilizar múltiples nodos en paralelo. Los resultados generados se almacenan en un nodo de resultados \textbf{Result Node} y, una vez completada la obtención de todos los datos, se guardan en el almacenamiento persistente de resultados.
+
 \begin{figure}[H]
     \centering
-    \includegraphics[width=1\textwidth]{img/robustez.pdf}
-    \caption{Diagrama de robustez}
+    \includegraphics[width=1\textwidth]{img/robustez_1.pdf}
+    \caption{Diagrama de robustez consulta 1°}
 \end{figure}
-\vfill
+
+En la consulta 2, TODO
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{img/robustez_2.pdf}
+    \caption{Diagrama de robustez consulta 2°}
+\end{figure}
+
+En la consulta 3, TODO
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{img/robustez_3.pdf}
+    \caption{Diagrama de robustez consulta 3°}
+\end{figure}
+
+En la consulta 4, TODO
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{img/robustez_4.pdf}
+    \caption{Diagrama de robustez consulta 4°}
+\end{figure}
+
+\subsection{Despliegue}
+
+TODO select queue y select node en la misma entidad
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=1\textwidth]{img/despliegue.pdf}
     \caption{Diagrama de despliegue}
 \end{figure}
-
-En este segundo diagrama se evidencia cómo el sistema escala el volumen de información incorporando nodos de procesamiento adicionales (Worker Nodes), lo que habilita la paralelización de cada operación del pipeline, en caso de que sea posible. 
-
-En este esquema, el Middleware cumple un rol central al intermediar entre el Scheduler y los nodos de procesamiento, administrando colas de trabajo y delegando su trabajo generando una especie de balanceo de carga, estas dos caracteristicas en conjunto garantizan una orquestación eficiente y confiable de las consultas.
-
-Finalmente, el diagrama detalla con qué entidades interactúa cada almacenamiento persistente: el Plan Storage conserva el estado y el avance de los planes, mientras que Intermediate Results persiste resultados parciales y checkpoints; ambos habilitan tolerancia a fallos y recuperacion sin reprocesamientos innecesarios.

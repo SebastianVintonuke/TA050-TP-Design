@@ -2,45 +2,6 @@
 
 \section{Vista de Desarrollo}
 
-Para esta vista decidimos diferenciar en nuestro sistema tres paquetes principales:
-
-\begin{itemize}
-    \item \textbf{Business Logic}
-    \begin{itemize}
-        \item Define las reglas y logica de negocio.
-        \item Orquesta los casos de uso del dominio.
-        \item Implementaciones de operaciones que soporta el sistema para realizar las consultas.
-        \begin{itemize}
-            \item Select
-            \item Project
-            \item Sort
-            \item GroupBy
-            \item Join
-        \end{itemize}
-        \item Cada una de las consultas va a pasar por una serie de operaciones para luego obtener el resultado esperado.
-        \item Coordinacion del ciclo de vida de los planes de ejecucion.
-    \end{itemize}
-    \item \textbf{Middleware}
-    \begin{itemize}
-        \item Abstrae la logica de conectividad y comunicación.
-        \item Asegura la conexion entre todos los componentes del sistema.
-        \item Soporte para la recuperacion ante fallos y persistencia a partir de almacenamiento de informacion parcial.
-        \begin{itemize}
-            \item Progreso del plan de la consulta a medida que va recorriendo el pipeline.
-            \item Resultados parciales luego de la ejecucion del pipeline de operaciones.
-        \end{itemize}
-        \item Redireccion a la cola acorde al plan de la consulta.
-    \end{itemize}
-    \item \textbf{Business Protocol}
-    \begin{itemize}
-        \item Serializacion y deserializacion
-        \begin{itemize}
-            \item Encapsulacion de los datos de los archivos csv.
-            \item Contrato que debe cumplir el formato de los planes que se van actualizando durante la ejecucion.
-        \end{itemize}
-    \end{itemize}
-\end{itemize}
-
 \vfill
 \begin{figure}[H]
     \centering
@@ -48,5 +9,3 @@ Para esta vista decidimos diferenciar en nuestro sistema tres paquetes principal
     \caption{Diagrama de paquetes}
 \end{figure}
 \vfill
-
-\clearpage
