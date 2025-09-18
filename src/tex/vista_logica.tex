@@ -4,6 +4,34 @@
 
 \subsection{Entidades del dominio del negocio}
 
-\textbf{Menu Item, Store, Transaction Item, Transaction, User}: Entidades sobre las que se aplican las consultas.
+\textbf{Menu Item}: Representa los productos del menú (cafés, postres, etc.) disponibles en cada tienda.
+
+\textbf{Store}: Sucursales físicas donde se realizan las transacciones.
+
+\textbf{Transaction Item}: Relación entre un producto y una transacción específica, con cantidad y precio unitario.
+
+\textbf{Transaction}: Operación de compra realizada por un cliente en una tienda en una fecha y hora determinada.
+
+\textbf{User}: Cliente que interactúa con la cadena de cafés.
 
 \subsection{Entidades del dominio del sistema}
+
+\textbf{Servidor}: Punto de entrada al sistema. Gestiona las solicitudes de los clientes, retorna los resultados y coordina la comunicación con el Dispatcher.
+
+\textbf{Dispatcher}: Responsable de recibir los archivos, validar y planificar la ejecución de las consultas. Divide el trabajo en tareas y las envía a los distintos nodos de procesamiento.
+
+\textbf{Middleware (MOM)}: Componente centralizado de mensajería orientada a colas. Permite la comunicación asincrónica entre nodos y asegura la tolerancia a fallos.
+
+\textbf{Select Node}: Nodo encargado de aplicar filtros (por fecha, hora y monto) para reducir el volumen de datos antes de etapas más complejas.
+
+\textbf{Group Node}: Nodo que agrupa la información según distintos criterios (por ejemplo, por producto, por cliente o por sucursal) y calcula métricas agregadas.
+
+\textbf{Join Node}: Nodo que une los resultados parciales con otras entidades del dominio (ejemplo: asociar item\_id con Menu Item).
+
+\textbf{Result Node}: Consolida los resultados de las consultas, los persiste en almacenamiento y los deja listos para ser recuperados por el cliente.
+
+\textbf{State Storage}: Almacenamiento intermedio utilizado por nodos que requieren mantener estado, como los Group o Join Nodes.
+
+\textbf{Result Storage}: Repositorio persistente donde se guardan los resultados finales de cada consulta, asociados al requestId y al cliente.
+
+\textbf{Task Queue}: Cola de mensajes que intermedia entre los distintos nodos y asegura la distribución ordenada de las tareas de procesamiento.
