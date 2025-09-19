@@ -11,3 +11,13 @@ Para compilar usar el LaTeX ejecutar:
 ```
 latexmk -pdf ./main.tex
 ```
+
+Para compilar puml a pdf
+
+```
+sudo apt install plantuml graphviz
+```
+
+```
+plantuml -tpdf <file>.puml
+```
