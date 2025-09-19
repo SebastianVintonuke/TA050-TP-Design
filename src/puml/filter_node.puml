@@ -25,19 +25,19 @@ skinparam RectangleBorderColor #44a0de
 control FilterNode
 participant Middleware
 participant TypeHandler
-queue GroupbyQueue
-control GroupbyNode
+queue GroupQueue
+control GroupNode
 
-activate GroupbyNode
+activate GroupNode
 activate FilterNode
 
 FilterNode-> Middleware : consume_filter_tasks(handler)
 activate Middleware
-GroupbyNode-> Middleware : consume_groupby_tasks(handler, indice)
+GroupNode-> Middleware : consume_Group_tasks(handler, indice)
 activate Middleware
 Middleware-->FilterNode: 
 
-Middleware-->GroupbyNode: 
+Middleware-->GroupNode: 
 deactivate Middleware
 deactivate Middleware
 
@@ -56,7 +56,7 @@ FilterNode -> Middleware: send_output(task_output.query_id, task_output)
 activate Middleware
 
 Middleware->Middleware: hash(key)
-Middleware -> GroupbyQueue: push_to(hashed_id, task_output)
+Middleware -> GroupQueue: push_to(hashed_id, task_output)
 
 Middleware -->FilterNode: 
 deactivate Middleware
@@ -65,16 +65,16 @@ deactivate FilterNode
 deactivate Middleware
 
 
-GroupbyQueue -> Middleware: notify_not_empty
+GroupQueue -> Middleware: notify_not_empty
 activate Middleware
 
-Middleware -> GroupbyNode : handle_groupby(task)
-activate GroupbyNode
+Middleware -> GroupNode : handle_Group(task)
+activate GroupNode
 
-GroupbyNode->GroupbyNode: exec(task.data)
-GroupbyNode--> Middleware:
+GroupNode->GroupNode: exec(task.data)
+GroupNode--> Middleware:
 deactivate Middleware
-deactivate GroupbyNode
+deactivate GroupNode
 
 
 @enduml

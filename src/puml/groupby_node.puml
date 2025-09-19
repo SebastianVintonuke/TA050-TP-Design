@@ -22,36 +22,36 @@ skinparam QueueBorderColor #44a0de
 skinparam RectangleBorderColor #44a0de
 
 
-control GroupbyNode
+control GroupNode
 participant Middleware
 participant TypeHandler
 queue JoinQueue
 control JoinNode
 
 activate JoinNode
-activate GroupbyNode
+activate GroupNode
 
-Middleware -> GroupbyNode: handle(task)
-activate GroupbyNode
+Middleware -> GroupNode: handle(task)
+activate GroupNode
 activate Middleware
 
-GroupbyNode-> GroupbyNode: get_handler(task.type_query)
-GroupbyNode-> TypeHandler : exec(task.data)
+GroupNode-> GroupNode: get_handler(task.type_query)
+GroupNode-> TypeHandler : exec(task.data)
 activate TypeHandler
-TypeHandler --> GroupbyNode: (task_output, hash_key)
+TypeHandler --> GroupNode: (task_output, hash_key)
 deactivate TypeHandler
 
-GroupbyNode -> Middleware: send_output(hash_key, task_output)
+GroupNode -> Middleware: send_output(hash_key, task_output)
 activate Middleware
 
 
 Middleware->Middleware: hash(hash_key)
 Middleware -> JoinQueue: push_to(hashed_key, task_output)
 
-Middleware -->GroupbyNode: 
+Middleware -->GroupNode: 
 deactivate Middleware
-GroupbyNode --> Middleware: return
-deactivate GroupbyNode
+GroupNode --> Middleware: return
+deactivate GroupNode
 deactivate Middleware
 
 
