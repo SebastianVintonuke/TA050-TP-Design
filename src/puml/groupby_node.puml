@@ -25,10 +25,10 @@ skinparam RectangleBorderColor #44a0de
 control GroupbyNode
 participant Middleware
 participant TypeHandler
-queue TopKQueue
-control TopKNode
+queue JoinQueue
+control JoinNode
 
-activate TopKNode
+activate JoinNode
 activate GroupbyNode
 
 Middleware -> GroupbyNode: handle(task)
@@ -46,7 +46,7 @@ activate Middleware
 
 
 Middleware->Middleware: hash(hash_key)
-Middleware -> TopKQueue: push_to(hashed_key, task_output)
+Middleware -> JoinQueue: push_to(hashed_key, task_output)
 
 Middleware -->GroupbyNode: 
 deactivate Middleware
@@ -55,16 +55,16 @@ deactivate GroupbyNode
 deactivate Middleware
 
 
-TopKQueue -> Middleware: notify_not_empty
+JoinQueue -> Middleware: notify_not_empty
 activate Middleware
 
-Middleware -> TopKNode : handle(task)
-activate TopKNode
+Middleware -> JoinNode : handle(task)
+activate JoinNode
 
-TopKNode->TopKNode: exec(task)
-TopKNode--> Middleware: return
+JoinNode->JoinNode: exec(task)
+JoinNode--> Middleware: return
 deactivate Middleware
-deactivate TopKNode
+deactivate JoinNode
 
 
 @enduml
