@@ -1,5 +1,27 @@
 @startuml
 
+skinparam backgroundColor transparent
+skinparam shadowing false
+
+skinparam defaultFontColor #121617
+skinparam ArrowColor #121617
+
+skinparam SequenceLifelineBorderColor #121617
+skinparam SequenceActivationBorderColor #121617
+
+skinparam EntityBorderColor #a9d4f1
+skinparam ControlBackgroundColor #a9d4f1
+skinparam ParticipantBackgroundColor #a9d4f1
+skinparam QueueBackgroundColor #a9d4f1
+skinparam RectangleBackgroundColor #a9d4f1
+
+skinparam EntityBorderColor #44a0de
+skinparam ControlBorderColor #44a0de
+skinparam ParticipantBorderColor #44a0de
+skinparam QueueBorderColor #44a0de
+skinparam RectangleBorderColor #44a0de
+
+
 control JoinNode
 participant Middleware
 participant TypeHandler

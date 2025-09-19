@@ -26,6 +26,8 @@ En la consulta 1, cada \textbf{Select Node} es capaz de ejecutar las tres selecc
     \caption{Diagrama de robustez consulta 1°}
 \end{figure}
 
+\clearpage
+
 En la consulta 2, cada \textbf{Select Node} únicamente realiza la primera selección por año. Posteriormente, los resultados se dirigen a un \textbf{Group Node}, el cual calcula dos métricas: el producto más vendido y el de mayor ganancia. Estos datos se bifurcan en dos pipelines independientes, que realizan un join y consolidan la información en el \textbf{Result Node}. Una vez unificados, los datos se almacenan de forma persistente, del mismo modo que en la consulta 1.
 
 \begin{figure}[H]
