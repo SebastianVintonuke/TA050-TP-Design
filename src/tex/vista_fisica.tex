@@ -54,14 +54,18 @@ En la consulta 4 también se reutiliza el resultado parcial de la consulta 1, co
     \caption{Diagrama de robustez consulta 4°}
 \end{figure}
 
+\clearpage
+
 \subsection{Despliegue}
 
 El \textbf{Servidor}, el \textbf{Middleware} y el almacenamiento de \textbf{Resultados} se despliegan como componentes independientes. Para aumentar la capacidad de procesamiento de solicitudes concurrentes, se permite el despliegue de múltiples instancias de \textbf{Dispatcher}.
 Las \textbf{Select Task Queues} y los \textbf{Select Nodes} también se despliegan de manera desacoplada, dado que cualquier nodo puede consumir tareas de cualquier cola.
 En contraste, los nodos que requieren mantener estado, como \textbf{Join} y \textbf{Group}, deben desplegarse junto con su cola y su almacenamiento asociados, a fin de preservar la coherencia del procesamiento. De manera análoga, los \textbf{Result Nodes} se despliegan con su cola correspondiente. En estos últimos dos casos, la asociación estricta con una cola garantiza la consistencia en la asignación de consultas a nodos específicos.
 
+\vfill
 \begin{figure}[H]
     \centering
     \includegraphics[width=1\textwidth]{img/despliegue.pdf}
     \caption{Diagrama de despliegue}
 \end{figure}
+\vfill
