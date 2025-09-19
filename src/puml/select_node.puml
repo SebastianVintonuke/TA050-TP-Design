@@ -22,46 +22,46 @@ skinparam QueueBorderColor #44a0de
 skinparam RectangleBorderColor #44a0de
 
 
-control FilterNode
+control SelectNode
 participant Middleware
 participant TypeHandler
 queue GroupQueue
 control GroupNode
 
 activate GroupNode
-activate FilterNode
+activate SelectNode
 
-FilterNode-> Middleware : consume_filter_tasks(handler)
+SelectNode-> Middleware : consume_select_tasks(handler)
 activate Middleware
 GroupNode-> Middleware : consume_group_tasks(handler, indice)
 activate Middleware
-Middleware-->FilterNode:
+Middleware-->SelectNode:
 
 Middleware-->GroupNode:
 deactivate Middleware
 deactivate Middleware
 
 
-Middleware -> FilterNode: handle(task)
-activate FilterNode
+Middleware -> SelectNode: handle(task)
+activate SelectNode
 activate Middleware
 
-FilterNode-> FilterNode: get_handler(task.type_query)
-FilterNode-> TypeHandler : exec(task.data)
+SelectNode-> SelectNode: get_handler(task.type_query)
+SelectNode-> TypeHandler : exec(task.data)
 activate TypeHandler
-TypeHandler --> FilterNode: task_output
+TypeHandler --> SelectNode: task_output
 deactivate TypeHandler
 
-FilterNode -> Middleware: send_output(task_output.query_id, task_output)
+SelectNode -> Middleware: send_output(task_output.query_id, task_output)
 activate Middleware
 
 Middleware->Middleware: hash(key)
 Middleware -> GroupQueue: push_to(hashed_id, task_output)
 
-Middleware -->FilterNode:
+Middleware -->SelectNode:
 deactivate Middleware
-FilterNode --> Middleware: return
-deactivate FilterNode
+SelectNode --> Middleware: return
+deactivate SelectNode
 deactivate Middleware
 
 

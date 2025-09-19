@@ -18,21 +18,31 @@ Ciertas tareas se pueden realizar en paralelo, por ejemplo la selección puede d
     \caption{Diagrama de actividades: Selección paralela}
 \end{figure}
 
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=1\textwidth]{img/filter_node.pdf}
-    \caption{Diagrama de secuencia: Filter Node}
-\end{figure}
+Este diagrama describe cómo un Select Node procesa las tareas que recibe a través del middleware.
+
+El SelectNode consume las tareas desde la cola correspondiente utilizando consume\_select\_tasks. Cada tarea es derivada a un TypeHandler, que se obtiene con get\_handler(task.type\_query). El handler ejecuta la operación (exec(task.data)), produciendo un resultado parcial (task\_output). El resultado se envía al Middleware mediante send\_output, que utiliza un esquema de hashing (hash(key)) para determinar a qué GroupQueue debe ir. Finalmente, el GroupNode correspondiente recibe la tarea y ejecuta handle\_group(task), continuando con la siguiente etapa del pipeline.
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=1\textwidth]{img/group_node.pdf}
+    \includegraphics[width=1\textwidth]{img/select\_node.pdf}
+    \caption{Diagrama de secuencia: Select Node}
+\end{figure}
+
+\clearpage
+
+Este diagrama describe cómo un Group Node procesa las tareas que recibe a través del middleware.
+
+El GroupNode recibe tareas desde el middleware (handle(task)). Se obtiene el handler correspondiente mediante get\_handler(task.type\_query). El handler ejecuta la lógica de agrupación (exec(task.data)), generando resultados junto con una clave de partición (task\_output, hash\_key). El resultado se envía al middleware con send\_output, que utiliza hash(hash\_key) para decidir a qué JoinQueue corresponde. El JoinNode recibe los resultados parciales y continúa con las uniones necesarias.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{img/group\_node.pdf}
     \caption{Diagrama de secuencia: Group Node}
 \end{figure}
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=1\textwidth]{img/partition_check.pdf}
+    \includegraphics[width=1\textwidth]{img/partition\_check.pdf}
     \caption{Diagrama de secuencia: Particion de un archivo}
 \end{figure}
 
