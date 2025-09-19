@@ -38,14 +38,14 @@ activate TypeHandler
 
 TypeHandler->Middleware: mark_partition_end(task.query_id, task.partition)
 activate Middleware
-Middleware --> TypeHandler : true 
+Middleware --> TypeHandler : true
 deactivate Middleware
 
 alt All partitions reached EOF
     TypeHandler -> TypeHandler : start_join()
     TypeHandler --> JoinNode: task_output
 else Partitions left to process
-    TypeHandler --> JoinNode : None
+    TypeHandler --> JoinNode : none
 end
 deactivate TypeHandler
 deactivate JoinNode

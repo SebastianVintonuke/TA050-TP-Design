@@ -48,7 +48,7 @@ activate Middleware
 Middleware->Middleware: hash(hash_key)
 Middleware -> JoinQueue: push_to(hashed_key, task_output)
 
-Middleware -->GroupNode: 
+Middleware --> GroupNode:
 deactivate Middleware
 GroupNode --> Middleware: return
 deactivate GroupNode

@@ -33,11 +33,11 @@ activate FilterNode
 
 FilterNode-> Middleware : consume_filter_tasks(handler)
 activate Middleware
-GroupNode-> Middleware : consume_Group_tasks(handler, indice)
+GroupNode-> Middleware : consume_group_tasks(handler, indice)
 activate Middleware
-Middleware-->FilterNode: 
+Middleware-->FilterNode:
 
-Middleware-->GroupNode: 
+Middleware-->GroupNode:
 deactivate Middleware
 deactivate Middleware
 
@@ -58,7 +58,7 @@ activate Middleware
 Middleware->Middleware: hash(key)
 Middleware -> GroupQueue: push_to(hashed_id, task_output)
 
-Middleware -->FilterNode: 
+Middleware -->FilterNode:
 deactivate Middleware
 FilterNode --> Middleware: return
 deactivate FilterNode
@@ -68,7 +68,7 @@ deactivate Middleware
 GroupQueue -> Middleware: notify_not_empty
 activate Middleware
 
-Middleware -> GroupNode : handle_Group(task)
+Middleware -> GroupNode: handle_group(task)
 activate GroupNode
 
 GroupNode->GroupNode: exec(task.data)
