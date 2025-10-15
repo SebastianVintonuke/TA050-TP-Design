@@ -1,0 +1,29 @@
+@startuml
+
+skinparam backgroundColor white
+skinparam classBorderColor black
+skinparam classBackgroundColor white
+skinparam ArrowColor black
+skinparam defaultFontColor black
+
+class DispatcherProtocol {
+    - _byte_protocol: ByteProtocol
+    - _signal_protocol: SignalProtocol
+    - _batch_protocol: BatchProtocol
+    - _pending_threads: Dict[Model, List]
+    - _select_lock: threading.Lock
+    - _out_middleware: OutMiddleware
+
+    + __init__(a_socket)
+    + close_with(closure_to_close)
+    + handle_requests()
+    - __join_pending_threads(model)
+    - __send_task_to_select_transaction(user_id, model, batch)
+    - __send_task_to_select_transaction_item(user_id, model, batch)
+    - __send_task_to_join_menu_item(user_id, model, batch)
+    - __send_task_to_join_user(user_id, model, batch)
+    - __send_task_to_join_store(user_id, model, batch)
+    - __send_EOF_for(user_id, model, counter)
+}
+
+@enduml

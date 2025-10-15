@@ -19,5 +19,5 @@ sudo apt install plantuml graphviz
 ```
 
 ```
-plantuml -tpdf <file>.puml
+plantuml -tpdf src/img/**/*.puml
 ```

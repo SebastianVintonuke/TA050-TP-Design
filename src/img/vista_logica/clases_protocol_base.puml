@@ -1,0 +1,56 @@
+@startuml
+
+skinparam backgroundColor white
+
+skinparam classBorderColor black
+skinparam classBackgroundColor white
+skinparam ArrowColor black
+skinparam defaultFontColor black
+
+class BatchProtocol {
+    - _MAX_BATCH_SIZE: int = 256 * 1024
+    - _MAX_BATCH_COUNT: int = 8196
+    - _byte_protocol: ByteProtocol
+
+    + __init__(a_socket)
+    + close_with(closure_to_close)
+    + send_batch(batch)
+    + send_all(reader)
+    + wait_batch()
+}
+
+class SignalProtocol {
+    - _byte_protocol: ByteProtocol
+
+    + __init__(a_socket)
+    + close_with(closure_to_close)
+    + send_ack()
+    + send_error(error)
+    + wait_signal()
+    - __wait_error_msg()
+}
+
+class ByteProtocol {
+    - _socket: socket.socket
+
+    + __init__(a_socket)
+    + close_with(closure_to_close)
+    + send_bytes(buf)
+    + wait_bytes()
+    + send_uint8(uint8)
+    + wait_uint8()
+    + send_uint16(uint16)
+    + wait_uint16()
+    + send_uint32(uint32)
+    + wait_uint32()
+    + send_all(buf)
+    + recv_all(n)
+
+    - __send_all(buf)
+    - __recv_all(n)
+}
+
+BatchProtocol --> ByteProtocol
+SignalProtocol --> ByteProtocol
+
+@enduml

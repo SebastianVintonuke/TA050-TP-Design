@@ -1,0 +1,23 @@
+@startuml
+
+skinparam backgroundColor white
+skinparam classBorderColor black
+skinparam classBackgroundColor white
+skinparam ArrowColor black
+skinparam defaultFontColor black
+
+class ServerProtocol {
+    - _byte_protocol: ByteProtocol
+    - _signal_protocol: SignalProtocol
+    - _dispatchers: List[str]
+    - _results_storages: List[str]
+    - _dispatcher_manager: DispatcherManager
+
+    + __init__(a_socket, dispatchers, results_stores, dispatcher_manager)
+    + close_with(closure_to_close)
+    + handle_requests()
+    - __assign_dispatcher_address()
+    - __assign_results_storage_address()
+}
+
+@enduml

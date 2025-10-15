@@ -1,0 +1,65 @@
+@startuml
+
+skinparam backgroundColor white
+skinparam classBorderColor black
+skinparam classBackgroundColor white
+skinparam ArrowColor black
+skinparam defaultFontColor black
+
+abstract class Model {
+    - _ORIGINAL_HEADER: str
+
+    + model_for(header: bytes): Type[Model]
+    + is_header_of(header: bytes): bool
+    + from_bytes_and_project(data: bytes): Model
+    + from_bytes(data: bytes): Model
+    + __str__(): str
+    + to_bytes(): bytes
+}
+
+
+class MenuItem {
+    + item_id: int
+    + item_name: str
+    + category: str
+    + price: float
+}
+
+class Store {
+    + store_id: int
+    + store_name: str
+    + state: str
+    + city: str
+}
+
+class Transaction {
+    + transaction_id: str
+    + store_id: int
+    + user_id: Optional[int]
+    + original_amount: float
+    + final_amount: float
+    + created_at: datetime
+}
+
+class TransactionItem {
+    + transaction_id: str
+    + item_id: int
+    + quantity: int
+    + unit_price: float
+    + subtotal: float
+    + created_at: datetime
+}
+
+class User {
+    + user_id: int
+    + birthdate: date
+    + registered_at: datetime
+}
+
+Model <|-- MenuItem
+Model <|-- Store
+Model <|-- Transaction
+Model <|-- TransactionItem
+Model <|-- User
+
+@enduml

@@ -1,0 +1,50 @@
+@startuml
+
+skinparam backgroundColor white
+skinparam classBorderColor black
+skinparam classBackgroundColor white
+skinparam ArrowColor black
+skinparam defaultFontColor black
+
+abstract class QueryResult {
+    + from_bytes(data: bytes)
+    + __str__()
+    + to_bytes()
+}
+
+class Query1 {
+    + transaction_id: str
+    + final_amount: float
+}
+
+class Query2BestSelling {
+    + ear_month_created_at: date
+    + item_name: str
+    + sellings_qty: int
+}
+
+class Query2MostProfit {
+    + year_month_created_at: date
+    + item_name: str
+    + profit_sum: float
+}
+
+class Query3 {
+    + year_created_at: date
+    + half_created_at: HalfCreatedAt
+    + store_name: str
+    + tpv: float
+}
+
+class Query4 {
+    + store_name: str
+    + birthdate: date
+}
+
+QueryResult <|-- Query1
+QueryResult <|-- Query2BestSelling
+QueryResult <|-- Query2MostProfit
+QueryResult <|-- Query3
+QueryResult <|-- Query4
+
+@enduml

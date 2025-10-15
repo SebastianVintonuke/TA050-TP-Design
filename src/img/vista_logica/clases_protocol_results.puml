@@ -1,0 +1,20 @@
+@startuml
+
+skinparam backgroundColor white
+skinparam classBorderColor black
+skinparam classBackgroundColor white
+skinparam ArrowColor black
+skinparam defaultFontColor black
+
+class ResultsProtocol {
+    - _byte_protocol: ByteProtocol
+    - _signal_protocol: SignalProtocol
+    - _batch_protocol: BatchProtocol
+
+    + __init__(a_socket)
+    + close_with(closure_to_close)
+    + handle_requests(assert_exists, do_with_results_when_ready)
+    - _send_in_batches_and_eof(reader)
+}
+
+@enduml

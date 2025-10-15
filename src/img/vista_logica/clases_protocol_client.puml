@@ -1,0 +1,26 @@
+@startuml
+
+skinparam backgroundColor white
+
+skinparam classBorderColor black
+skinparam classBackgroundColor white
+skinparam ArrowColor black
+skinparam defaultFontColor black
+
+class ClientProtocol {
+    - _byte_protocol: ByteProtocol
+    - _signal_protocol: SignalProtocol
+    - _batch_protocol: BatchProtocol
+
+    + __init__(a_socket)
+    + close_with(closure_to_close)
+    + upload_files(input_dir, open_file, close_file)
+    + download_results(output_dir, client_id, open_output_file, close_file)
+    + request_dispatcher_address()
+    + request_results_storage_address(client_id)
+    - __is_valid_or_raise(address)
+    - __try_download_results(dir_file_query, open_output_file, close_file)
+    - __receive_result_and_store_into(file)
+}
+
+@enduml

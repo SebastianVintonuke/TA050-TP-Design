@@ -1,0 +1,61 @@
+@startuml
+
+skinparam backgroundColor white
+skinparam classBorderColor black
+skinparam classBackgroundColor white
+skinparam ArrowColor black
+skinparam defaultFontColor black
+
+' ============================================
+' CLASES PRINCIPALES
+' ============================================
+
+class ResultStorage {
+    - _dir_path: Path
+    - _users: Dict[str, UserResult]
+    - _users_lock: threading.Lock
+    + __init__(dir_path: str)
+    + handle(result_task: ResultTask)
+    + do_with_results_when_ready(user_id: str, a_closure: Callable[[BufferedReader], None])
+    + assert_exists(user_id: str)
+    - __get_or_create_user(user_id: str): UserResult
+    - __delete_results(user_id: str)
+    - __load_users(): Dict[str, UserResult]
+}
+
+class UserResult {
+    - _base_dir: Path
+    - _query_states: Dict[QueryId, QueryState]
+    - _all_queries_are_ready: threading.Condition
+    + __init__(base_dir: Path)
+    + append(query_id: QueryId, results: Sequence[QueryResult])
+    + mark_ready(query_id: QueryId)
+    + do_with_each_result_file_when_ready(a_closure: Callable[[BufferedReader], None])
+    + delete()
+}
+
+' ============================================
+' DEPENDENCIAS Y TIPOS AUXILIARES
+' ============================================
+
+class ResultTask {
+    + user_id: str
+    + query_id: QueryId
+    + data: Sequence[QueryResult]
+    + abort: bool
+    + eof: bool
+}
+
+class QueryState {
+    lock: threading.Lock
+    ready: bool
+}
+
+' ============================================
+' RELACIONES
+' ============================================
+
+ResultStorage --> UserResult
+UserResult --> QueryState
+
+@enduml

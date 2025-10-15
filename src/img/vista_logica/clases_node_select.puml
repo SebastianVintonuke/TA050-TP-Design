@@ -1,0 +1,66 @@
+@startuml
+
+skinparam backgroundColor white
+skinparam classBorderColor black
+skinparam classBackgroundColor white
+skinparam ArrowColor black
+skinparam defaultFontColor black
+
+' ============================================
+' BASE TYPE CONFIGURATION
+' ============================================
+
+class BaseTypeConfiguration {
+    - middleware
+    - new_builder_for
+    - in_fields_count: int
+    - mapper: RowMapper
+    + __init__(out_middleware, builder_creator, in_fields_count)
+    + load_mapper(config)
+    + send(builder)
+    + pad_copy_row(row)
+    + filter_map(row, msg_builder)
+}
+
+' ============================================
+' TYPE HANDLER
+' ============================================
+
+class TypeHandler {
+    - type_conf: BaseTypeConfiguration
+    - msg_builder
+    + __init__(type_conf, msg_builder)
+    + check(row)
+    + send_built()
+}
+
+TypeHandler --> BaseTypeConfiguration
+
+' ============================================
+' SELECT NODE
+' ============================================
+
+class SelectNode {
+    - middleware
+    - type_expander
+    - payload_deserializer
+    + __init__(select_middleware, payload_deserializer, type_expander)
+    + handle_task(headers, msg)
+    + start()
+    + close()
+}
+
+SelectNode --> TypeHandler
+SelectNode --> TypeExpander
+
+' ============================================
+' AUXILIARES (REFERENCIAS)
+' ============================================
+
+class TypeExpander {
+    + get_configurations_for(type)
+    + propagate_signal_in(headers)
+    + close()
+}
+
+@enduml

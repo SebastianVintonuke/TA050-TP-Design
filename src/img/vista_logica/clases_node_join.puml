@@ -1,0 +1,83 @@
+@startuml
+
+skinparam backgroundColor white
+skinparam classBorderColor black
+skinparam classBackgroundColor white
+skinparam ArrowColor black
+skinparam defaultFontColor black
+
+' ============================================
+' CLASE PRINCIPAL
+' ============================================
+
+class JoinAccumulator {
+    - type_conf: JoinTypeConfig
+    - msg_builder: MessageBuilder
+    - left_rows: list
+    - right_rows: list
+    - left_finished: bool
+    - right_finished: bool
+    - limit: int
+    - msg_sent: int
+    - msg_expected_left: int
+    - msg_expected_right: int
+    - msg_count_left: int
+    - msg_count_right: int
+
+    + __init__(type_conf, msg_builder, limit = 10000)
+    + len_left(): int
+    + len_right(): int
+    + len_joined(): int
+    + add_joined(row)
+    + handle_eof_left(msg_count_expected)
+    + handle_eof_right(msg_count_expected)
+    + get_action_for_type(type)
+    + get_actions_for_type(type)
+    + add_check_msg_left(): bool
+    + add_check_msg_right(): bool
+    + do_join_left_row(left_row)
+    + do_join_right_row(right_row)
+    + add_row_left(left_row)
+    + add_row_right(right_row)
+    + send_eof()
+    + describe_send()
+    + describe()
+}
+
+' ============================================
+' DEPENDENCIAS PRINCIPALES
+' ============================================
+
+class JoinTypeConfig {
+    + left_type: str
+    + join_id: str
+    + send(builder)
+    + do_join_left_row(right_rows, left_row, add_joined)
+    + do_join_right_row(left_rows, right_row, add_joined)
+}
+
+class MessageBuilder {
+    + headers: BaseHeaders
+    + add_row(row)
+    + len_payload(): int
+    + clear_payload()
+    + has_payload(): bool
+    + clone(): MessageBuilder
+    + set_as_eof(msg_sent: int)
+}
+
+class BaseHeaders {
+    + types: list
+    + ids: list
+    + clone(): BaseHeaders
+}
+
+' ============================================
+' RELACIONES
+' ============================================
+
+JoinAccumulator --> JoinTypeConfig
+JoinAccumulator --> MessageBuilder
+MessageBuilder --> BaseHeaders
+
+@enduml

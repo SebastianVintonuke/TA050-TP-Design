@@ -1,16 +1,14 @@
-\clearpage
-
 \section{Vista Física}
 
 \subsection{Topología compartida}
 
 La \textbf{topología del sistema} se define a partir de los distintos pipelines necesarios para resolver cada consulta. Todas las consultas comparten una sección común formada por tres componentes principales.
 
-\textbf{Servidor}: Actúa como balanceador de carga: cuando un usuario envía una consulta, lo conecta con un Dispatcher; en cambio, cuando el usuario solicita acceder a los resultados, el servidor se encarga de devolverlos una vez que la ejecución ha finalizado.
+\textbf{Servidor}: Actúa como balanceador de carga: cuando un usuario envía una consulta, lo conecta con un Dispatcher; en cambio, cuando el usuario solicita acceder a los resultados, el servidor se encarga de lo conecta con su Data Storage de Resultados.
 
 \textbf{Resultados}: Los resultados de cada consulta se almacenan en disco y se asocian al ID del cliente que la originó, lo que permite acceder a ellos de manera asincrónica en cualquier momento posterior.
 
-\textbf{Dispatcher}: recibe los datos, aplica las validaciones necesarias y transforma su formato cuando es conveniente. Además, se encarga de planificar el pipeline de nodos y de reenviar los datos a través de este para su procesamiento.
+\textbf{Dispatcher}: recibe los datos, aplica las validaciones necesarias y transforma a un formato conveniente. Además, se encarga de reenviar los datos a través de una cola de tareas para su procesamiento.
 
 \subsection{Topología entre consultas}
 
@@ -18,21 +16,19 @@ Para explicar la topología del sistema, la organizamos en función de los disti
 
 \subsection{Topología por consulta}
 
-En la consulta 1, cada \textbf{Select Node} es capaz de ejecutar las tres selecciones requeridas. Para acelerar la resolución, es posible utilizar múltiples nodos en paralelo. Los resultados generados se almacenan en un nodo de resultados \textbf{Result Node} y, una vez completada la obtención de todos los datos, se guardan en el almacenamiento persistente de resultados.
+En la consulta 1, cada \textbf{Select Node} es capaz de ejecutar las tres selecciones requeridas. Para acelerar la resolución, es posible utilizar múltiples nodos en paralelo. Los resultados generados se envían a un nodo de resultados \textbf{Result Node} donde se consolidan y se van retransmitiendo al almacenamiento persistente de resultados.
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=1\textwidth]{img/robustez_1.pdf}
+    \includegraphics[width=1\textwidth]{img/vista_fisica/robustez_1.pdf}
     \caption{Diagrama de robustez consulta 1°}
 \end{figure}
-
-\clearpage
 
 En la consulta 2, cada \textbf{Select Node} únicamente realiza la primera selección por año. Posteriormente, los resultados se dirigen a un \textbf{Group Node}, el cual calcula dos métricas: el producto más vendido y el de mayor ganancia. Estos datos se bifurcan en dos pipelines independientes, que realizan un join y consolidan la información en el \textbf{Result Node}. Una vez unificados, los datos se almacenan de forma persistente, del mismo modo que en la consulta 1.
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=1\textwidth]{img/robustez_2.pdf}
+    \includegraphics[width=1\textwidth]{img/vista_fisica/robustez_2.pdf}
     \caption{Diagrama de robustez consulta 2°}
 \end{figure}
 
@@ -42,7 +38,7 @@ Es importante destacar que, como se mencionó previamente, las consultas 1 y 3 u
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=1\textwidth]{img/robustez_3.pdf}
+    \includegraphics[width=1\textwidth]{img/vista_fisica/robustez_3.pdf}
     \caption{Diagrama de robustez consulta 3°}
 \end{figure}
 
@@ -50,11 +46,9 @@ En la consulta 4 también se reutiliza el resultado parcial de la consulta 1, co
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=1\textwidth]{img/robustez_4.pdf}
+    \includegraphics[width=1\textwidth]{img/vista_fisica/robustez_4.pdf}
     \caption{Diagrama de robustez consulta 4°}
 \end{figure}
-
-\clearpage
 
 \subsection{Despliegue}
 
@@ -62,10 +56,8 @@ El \textbf{Servidor}, el \textbf{Middleware} y el almacenamiento de \textbf{Resu
 Las \textbf{Select Task Queues} y los \textbf{Select Nodes} también se despliegan de manera desacoplada, dado que cualquier nodo puede consumir tareas de cualquier cola.
 En contraste, los nodos que requieren mantener estado, como \textbf{Join} y \textbf{Group}, deben desplegarse junto con su cola y su almacenamiento asociados, a fin de preservar la coherencia del procesamiento. De manera análoga, los \textbf{Result Nodes} se despliegan con su cola correspondiente. En estos últimos dos casos, la asociación estricta con una cola garantiza la consistencia en la asignación de consultas a nodos específicos.
 
-\vfill
 \begin{figure}[H]
     \centering
-    \includegraphics[width=1\textwidth]{img/despliegue.pdf}
+    \includegraphics[width=1\textwidth]{img/vista_fisica/despliegue.pdf}
     \caption{Diagrama de despliegue}
 \end{figure}
-\vfill

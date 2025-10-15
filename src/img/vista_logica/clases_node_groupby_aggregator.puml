@@ -1,0 +1,47 @@
+@startuml
+
+skinparam backgroundColor white
+skinparam classBorderColor black
+skinparam classBackgroundColor white
+skinparam ArrowColor black
+skinparam defaultFontColor black
+
+class CountAction {
+    + new()
+    + add_value(acc)
+    + get_result(acc)
+}
+
+class SumAction {
+    + new(value)
+    + add_value(acc, value)
+    + get_result(acc)
+}
+
+class MaxAction {
+    + new(value)
+    + add_value(acc, value)
+    + get_result(acc)
+}
+
+class AvgAction {
+    + new(value)
+    + add_value(acc, value)
+    + get_result(acc)
+}
+
+RowAggregator "1" *-- "*" CountAction
+RowAggregator "1" *-- "*" SumAction
+RowAggregator "1" *-- "*" MaxAction
+RowAggregator "1" *-- "*" AvgAction
+
+class RowAggregator {
+    - group_actions
+    - count_out_fields
+    + new_group_acc(row)
+    + add_group_acc(acc, row)
+    + add_aggregated_to(base, acc)
+    + iterate_rows(acc)
+}
+
+@enduml

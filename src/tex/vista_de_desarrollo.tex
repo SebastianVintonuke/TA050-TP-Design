@@ -1,5 +1,3 @@
-\clearpage
-
 \section{Vista de Desarrollo}
 
 \textbf{Business Logic}: Contiene la lógica de negocio asociada a las consultas definidas en el alcance. Aquí se implementan las reglas para filtrar, agrupar, unir y consolidar datos, de manera independiente de la infraestructura subyacente.
@@ -24,10 +22,37 @@
 
 \textbf{Byte Protocol}: Capa más baja de comunicación, que define la serialización y deserialización de los mensajes para su envío eficiente a través del middleware.
 
-\vfill
 \begin{figure}[H]
     \centering
     \includegraphics[width=1\textwidth]{img/paquetes.pdf}
     \caption{Diagrama de paquetes}
 \end{figure}
-\vfill
+
+Dentro del paquete de protocolos se definen los protocolos principales, homónimos de las entidades que los utilizan (Client, Server, etc.).
+Estos protocolos están implementados siguiendo un patrón Composite, en el cual los protocolos de entidad se componen de protocolos de un nivel intermedio, llamados Batch y Signal.
+A su vez, estos protocolos intermedios se implementan sobre un protocolo de nivel inferior, denominado ByteProtocol.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{img/paquetes_protocolo.pdf}
+    \caption{Paquete de protocolos}
+\end{figure}
+
+El paquete Models contiene las clases que representan las distintas entidades del dominio de negocio, mientras que el paquete Results agrupa las estructuras correspondientes a los resultados de las consultas procesadas.
+
+\begin{figure}[H]
+    \centering
+    \hspace*{\fill}
+    \begin{minipage}[b]{0.35\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{img/paquetes_models.pdf}
+        \caption{Paquete de modelos}
+    \end{minipage}
+    \hspace*{\fill}
+    \begin{minipage}[b]{0.35\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{img/paquetes_results.pdf}
+        \caption{Paquete de resultados}
+    \end{minipage}
+    \hspace*{\fill}
+\end{figure}

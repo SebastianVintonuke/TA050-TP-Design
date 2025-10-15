@@ -1,5 +1,3 @@
-\clearpage
-
 \section{Vista Lógica}
 
 \subsection{Entidades del dominio del negocio}
@@ -14,19 +12,71 @@
 
 \textbf{User}: Cliente que interactúa con la cadena de cafés.
 
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{img/vista_logica/clases_model.pdf}
+    \caption{Diagrama de clases de los modelos de datos iniciales}
+\end{figure}
+
+\textbf{Query 1}: Transacciones válidas por período horario y monto mínimo
+
+\textbf{Query 2 Best Selling}: Producto más vendido por mes
+
+\textbf{Query 2 Most Profit}: Producto con mayor ganancia por mes
+
+\textbf{Query 3}: TPV (Total Payment Value) por semestre y sucursal
+
+\textbf{Query 4}: Clientes más frecuentes por sucursal
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{img/vista_logica/clases_query.pdf}
+    \caption{Diagrama de clases de los modelos de datos resultado}
+\end{figure}
+
 \subsection{Entidades del dominio del sistema}
 
-\textbf{Servidor}: Punto de entrada al sistema. Gestiona las solicitudes de los clientes, retorna los resultados y coordina la comunicación con el Dispatcher.
+\textbf{Servidor}: Punto de entrada del sistema. Recibe a los clientes y les asigna un dispatcher para que suban sus archivos o recibe un clientID y les informa su Data Storage asignado.
 
 \textbf{Dispatcher}: Responsable de recibir los archivos, validar y planificar la ejecución de las consultas. Divide el trabajo en tareas y las envía a los distintos nodos de procesamiento.
 
 \textbf{Middleware (MOM)}: Componente centralizado de mensajería orientada a colas. Permite la comunicación asincrónica entre nodos y asegura la tolerancia a fallos.
 
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.75\textwidth]{img/vista_logica/clases_middleware.pdf}
+    \caption{Diagrama de clases de la jerarquía del middleware}
+\end{figure}
+
 \textbf{Select Node}: Nodo encargado de aplicar filtros (por fecha, hora y monto) para reducir el volumen de datos antes de etapas más complejas.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.75\textwidth]{img/vista_logica/clases_node_select.pdf}
+    \caption{Diagrama de clases del nodo de selección}
+\end{figure}
 
 \textbf{Group Node}: Nodo que agrupa la información según distintos criterios (por ejemplo, por producto, por cliente o por sucursal) y calcula métricas agregadas.
 
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.75\textwidth]{img/vista_logica/clases_node_groupby_grouper.pdf}
+    \caption{Diagrama de clases del nodo de agrupamiento}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.75\textwidth]{img/vista_logica/clases_node_groupby_aggregator.pdf}
+    \caption{Diagrama de clases del nodo de agregación}
+\end{figure}
+
 \textbf{Join Node}: Nodo que une los resultados parciales con otras entidades del dominio (ejemplo: asociar item\_id con Menu Item).
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.75\textwidth]{img/vista_logica/clases_node_join.pdf}
+    \caption{Diagrama de clases del nodo de unión}
+\end{figure}
 
 \textbf{Result Node}: Consolida los resultados de las consultas, los persiste en almacenamiento y los deja listos para ser recuperados por el cliente.
 
@@ -34,4 +84,57 @@
 
 \textbf{Result Storage}: Repositorio persistente donde se guardan los resultados finales de cada consulta, asociados al requestId y al cliente.
 
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.75\textwidth]{img/vista_logica/clases_results_storage.pdf}
+    \caption{Diagrama de clases del almacenamiento de resultados}
+\end{figure}
+
 \textbf{Task Queue}: Cola de mensajes que intermedia entre los distintos nodos y asegura la distribución ordenada de las tareas de procesamiento.
+
+\subsection{Entidades de comunicación}
+
+\textbf{Client Protocol}: Gestiona la comunicación desde el cliente hacia el servidor o el dispatcher. Permite enviar los archivos CSV de entrada y recibir las direcciones de conexión asignadas. Es responsable de empaquetar y transmitir los datos de forma segura mediante los protocolos de bajo nivel.
+
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.55\textwidth]{img/vista_logica/clases_protocol_client.pdf}
+    \caption{Diagrama de clase del protocolo del cliente}
+\end{figure}
+
+\textbf{Server Protocol}: Encapsula la lógica de comunicación entre el servidor y los clientes, distribuye la carga de clientes sobre el sistema, asigna direcciones de Dispatchers o Result Storages.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.55\textwidth]{img/vista_logica/clases_protocol_server.pdf}
+    \caption{Diagrama de clase del protocolo del servidor}
+\end{figure}
+
+\textbf{Dispatcher Protocol}: Define la comunicación entre el cliente y el dispatcher. Se encarga de recibir los lotes de datos, identificar los modelos de entrada y distribuir las tareas a los nodos correspondientes (\textit{Select}, \textit{Join}, etc.).
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.55\textwidth]{img/vista_logica/clases_protocol_dispatcher.pdf}
+    \caption{Diagrama de clase del protocolo del dispatcher}
+\end{figure}
+
+\textbf{Result Protocol}: Protocolo responsable de la comunicación entre el cliente y el storage de resultados. Gestiona la notificación de la finalización de consultas y el envío de los resultados.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.55\textwidth]{img/vista_logica/clases_protocol_results.pdf}
+    \caption{Diagrama de clase del protocolo del resultado}
+\end{figure}
+
+\textbf{Batch Protocol}: Protocolo de comunicación orientado al envío y recepción de grandes volúmenes de datos en forma de lotes (batches). Controla el tamaño máximo de cada lote y la cantidad total de elementos transmitidos, garantizando eficiencia y estabilidad en las transmisiones.
+
+\textbf{Signal Protocol}: Protocolo de señalización utilizado para el intercambio de mensajes de control y propagación de errores. Permite la sincronización y la gestión de errores en la comunicación.
+
+\textbf{Byte Protocol}: Protocolo base que define las operaciones elementales de envío y recepción de bytes, enteros y bloques de datos. Todos los protocolos de nivel superior se apoyan en él para garantizar una comunicación binaria confiable entre sockets.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.75\textwidth]{img/vista_logica/clases_protocol_base.pdf}
+    \caption{Diagrama de clases de los protocolos de bajo nivel}
+\end{figure}

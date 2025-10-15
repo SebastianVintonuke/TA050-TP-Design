@@ -1,0 +1,59 @@
+@startuml
+
+skinparam backgroundColor white
+skinparam classBorderColor black
+skinparam classBackgroundColor white
+skinparam ArrowColor black
+skinparam defaultFontColor black
+
+class KeepAllRowsAction {
+    + add_new(current_grouped, row)
+    + add_to(current_grouped, row)
+    + add_all(current_grouped, rows)
+}
+
+class KeepTopAction {
+    - comp_key
+    + add_new(current_grouped, row)
+    + add_to(current_grouped, row)
+    + add_all(current_grouped, rows)
+}
+
+class KeepTopKAction {
+    - comp_key
+    - limit
+    + add_new(current_grouped, row)
+    + add_to(current_grouped, row)
+    + add_all(current_grouped, rows)
+}
+
+class KeepLeastKAction {
+    + add_new(current_grouped, row)
+    + add_to(current_grouped, row)
+    + add_all(current_grouped, rows)
+}
+
+class KeepAscOrDescK {
+    - limit
+    - comp_key
+    - comp_key2
+    + add_new(current_grouped, row)
+    + add_to(current_grouped, row)
+    + add_all(current_grouped, rows)
+}
+
+RowGrouper "1" *-- "*" KeepAllRowsAction
+RowGrouper "1" *-- "*" KeepTopAction
+RowGrouper "1" *-- "*" KeepTopKAction
+RowGrouper "1" *-- "*" KeepLeastKAction
+RowGrouper "1" *-- "*" KeepAscOrDescK
+
+class RowGrouper {
+    - grouper
+    + new_group_acc(row)
+    + add_group_acc(acc, row)
+    + add_all_group_acc(acc, rows)
+    + iterate_rows(acc)
+}
+
+@enduml
