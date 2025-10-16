@@ -6,12 +6,6 @@ skinparam classBackgroundColor white
 skinparam ArrowColor black
 skinparam defaultFontColor black
 
-class CountAction {
-    + new()
-    + add_value(acc)
-    + get_result(acc)
-}
-
 class SumAction {
     + new(value)
     + add_value(acc, value)
@@ -30,10 +24,17 @@ class AvgAction {
     + get_result(acc)
 }
 
-RowAggregator "1" *-- "*" CountAction
-RowAggregator "1" *-- "*" SumAction
-RowAggregator "1" *-- "*" MaxAction
-RowAggregator "1" *-- "*" AvgAction
+RowAggregator *-- ColumnActionAggregator
+
+ColumnActionAggregator <|-- SumAction
+ColumnActionAggregator <|-- MaxAction
+ColumnActionAggregator <|-- AvgAction
+
+abstract class ColumnActionAggregator {
+    + new(value)
+    + add_value(acc, value)
+    + get_result(acc)
+}
 
 class RowAggregator {
     - group_actions

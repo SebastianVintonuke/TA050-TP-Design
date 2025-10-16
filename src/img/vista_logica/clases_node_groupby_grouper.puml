@@ -42,11 +42,19 @@ class KeepAscOrDescK {
     + add_all(current_grouped, rows)
 }
 
-RowGrouper "1" *-- "*" KeepAllRowsAction
-RowGrouper "1" *-- "*" KeepTopAction
-RowGrouper "1" *-- "*" KeepTopKAction
-RowGrouper "1" *-- "*" KeepLeastKAction
-RowGrouper "1" *-- "*" KeepAscOrDescK
+RowGrouper *-- RowGrouperAction
+
+RowGrouperAction <|-- KeepAllRowsAction
+RowGrouperAction <|-- KeepTopAction
+RowGrouperAction <|-- KeepTopKAction
+RowGrouperAction <|-- KeepLeastKAction
+RowGrouperAction <|-- KeepAscOrDescK
+
+abstract class RowGrouperAction {
+    + add_new(current_grouped, row)
+    + add_to(current_grouped, row)
+    + add_all(current_grouped, rows)
+}
 
 class RowGrouper {
     - grouper

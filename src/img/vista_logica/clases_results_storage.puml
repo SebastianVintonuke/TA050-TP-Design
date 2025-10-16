@@ -57,5 +57,6 @@ class QueryState {
 
 ResultStorage --> UserResult
 UserResult --> QueryState
+ResultStorage ..> ResultTask
 
 @enduml
