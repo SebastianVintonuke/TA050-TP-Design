@@ -4,7 +4,7 @@ El sistema se basa en una arquitectura mixta. Adopta un modelo cliente-servidor 
 
 \subsection{Interacción con el cliente}
 
-La comunicación entre el cliente y el sistema se basa en un modelo cliente-servidor. El cliente envía una consulta en la que incluye los archivos CSV a procesar. El servidor recibe esta petición y responde con un requestId, un identificador único asociado a la consulta.
+La comunicación entre el cliente y el sistema se basa en un modelo cliente-servidor. El cliente envía una consulta en la que incluye los archivos CSV a procesar. El sistema recibe esta petición y responde con un requestId, un identificador único asociado a la consulta.
 
 Más adelante, el cliente utiliza ese requestId para consultar el estado de su solicitud. Esta operación es bloqueante, ya que el cliente debe esperar hasta que el procesamiento haya finalizado para poder acceder a los resultados.
 
@@ -14,4 +14,4 @@ En conjunto, la interacción define un \textbf{protocolo de comunicación asínc
 
 La interacción principal del sistema se establece entre el Dispatcher y los nodos de ejecución, responsables de llevar a cabo las distintas etapas de procesamiento que conforman los pipelines.
 
-Esta coordinación se realiza a través de un \textbf{Message-Oriented Middleware (MOM)}, centralizado y basado en un modelo de colas asíncronas de mensajes. En este esquema, cada nodo tiene una cola de entrada y despacha sus resultados a una siguiente cola, exceptuando el último nodo, el cual consolida los resultados y los envía al almacenamiento persistente de resultados.
+Esta coordinación se realiza a través de un \textbf{Message-Oriented Middleware (MOM)}, centralizado y basado en un modelo de colas asíncronas de mensajes. En este esquema, cada nodo tiene una cola de entrada y despacha sus resultados a una siguiente cola, al finalizar, se consolidan los resultados y se envían al almacenamiento persistente.

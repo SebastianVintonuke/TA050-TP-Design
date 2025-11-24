@@ -10,9 +10,9 @@
 
 \textbf{Middleware}: Proporciona la abstracción de comunicación entre nodos mediante un modelo orientado a colas. Se asegura de la entrega confiable de mensajes, la asincronía y la tolerancia a fallos.
 
-\textbf{State Storage}: Almacenamiento intermedio para nodos con estado (Group y Join). Garantiza que los datos parciales se conserven mientras se procesan.
+\textbf{State Storage}: Almacenamiento persistente para partes del sistema con estado. Garantiza que los datos parciales se conserven en caso de falla.
 
-\textbf{Result Storage}: Repositorio persistente para almacenar los resultados finales, asociados a cada consulta y cliente mediante el requestId.
+\textbf{Result Storage}: Repositorio persistente para almacenar los resultados finales, asociados a clientes mediante el client\_id.
 
 \textbf{Routing}: Encargado de dirigir cada mensaje hacia el nodo o cola correspondiente, aplicando estrategias de hash y balanceo de carga.
 

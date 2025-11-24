@@ -37,3 +37,83 @@ El GroupNode recibe tareas desde el middleware (handle(task)). Se obtiene el han
     \includegraphics[width=1\textwidth]{img/vista_de_procesos/groupby_node.pdf}
     \caption{Diagrama de secuencia: Group Node}
 \end{figure}
+
+\subsection{State Storage}
+
+Los diferentes elementos que componen el sistema podrían verse afectados por un fallo en cualquier momento de su operación, por lo que podrían quedar ellos mismo o todo el sistema en un estado inconsistente.
+
+En el siguiente diagrama se muestra como se utiliza el \textbf{State Storage} para asegurar la resiliencia a fallos y la consistencia de los datos ya procesados por el \textbf{Groupby Node}.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{img/vista_de_procesos/state_storage.pdf}
+    \caption{Diagrama de secuencia: Interacción entre Groupby Node y su State Storage}
+\end{figure}
+
+\clearpage
+
+\subsection*{Fase de Recuperación}
+
+\begin{itemize}
+  \item \textbf{Carga del Estado}: Se recupera el estado persistido que incluye:
+    \begin{itemize}
+      \item Estado actual de las queries
+      \item Timestamp del último cambio aplicado
+      \item Timestamp del último cambio comprometido
+      \item ID del paquete en proceso
+      \item Metadatos y tags adicionales
+    \end{itemize}
+
+  \item \textbf{Verificación de Integridad}: Para cada query almacenada:
+    \begin{itemize}
+      \item Si hay cambios comprometidos pendientes $\rightarrow$ Se aplican automáticamente
+      \item Si hay cambios sin comprometer $\rightarrow$ Se descartan para mantener consistencia
+      \item Se retorna el último estado válido
+    \end{itemize}
+\end{itemize}
+
+
+\subsection*{Fase de Procesamiento Normal}
+
+\begin{itemize}
+  \item \textbf{Registro del Nuevo Paquete}:
+    \begin{itemize}
+      \item Se actualiza el timestamp del cambio actual
+      \item Se almacena la información del paquete (query\_id, packet\_id, metadatos)
+    \end{itemize}
+
+  \item \textbf{Cálculo del Nuevo Estado}:
+    \begin{itemize}
+      \item Se procesa la lógica de negocio con los datos del paquete
+      \item Se genera la nueva versión/cambios a aplicar
+    \end{itemize}
+
+  \item \textbf{Preparación de Cambios}:
+    \begin{itemize}
+      \item Se escriben los cambios en la sección temporal de cambios pendientes
+    \end{itemize}
+
+  \item \textbf{Compromiso de Cambios (commit\_changes)}:
+    \begin{itemize}
+      \item Se incrementa el timestamp de cambios comprometidos
+      \item Los cambios pasan de ``pendientes'' a ``comprometidos'' (atomicidad)
+    \end{itemize}
+
+  \item \textbf{Aplicación de Cambios (push\_changes)}:
+    \begin{itemize}
+      \item Se fusionan los cambios comprometidos con el estado actual
+      \item Se eliminan los cambios ya aplicados de la cola de comprometidos
+    \end{itemize}
+
+  \item \textbf{Finalización del Procesamiento}:
+    \begin{itemize}
+      \item Se envía ACK al mensaje para confirmar procesamiento exitoso
+      \item Se limpia la información del paquete actual (reset\_packet\_id)
+    \end{itemize}
+\end{itemize}
+
+
+Notese que, si bien el ejemplo utiliza el caso particular del \textbf{Groupby Node}, la lógica del \textbf{State Storage} no está acoplada a un estado específico.
+En su lugar, emplea una interfaz de estado que define los mecanismos de serialización y deserialización.
+
+Esto permite que el \textbf{State Storage} sea utilizado por distintos componentes del sistema, cada uno declarando el estado que necesita persistir según la función que desempeña.

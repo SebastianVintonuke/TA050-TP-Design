@@ -78,17 +78,30 @@
     \caption{Diagrama de clases del nodo de unión}
 \end{figure}
 
-\textbf{Result Node}: Consolida los resultados de las consultas, los persiste en almacenamiento y los deja listos para ser recuperados por el cliente.
+\textbf{Result Node}: Consolida los resultados de las consultas, mapea los resultados finales al formato deseado y verifica su finalización.
 
-\textbf{State Storage}: Almacenamiento intermedio utilizado por nodos que requieren mantener estado, como los Group o Join Nodes.
+\textbf{State Storage}: Almacenamiento intermedio utilizado por partes del sistema que requieren mantener estado en caso de fallo.
 
-\textbf{Result Storage}: Repositorio persistente donde se guardan los resultados finales de cada consulta, asociados al requestId y al cliente.
+\begin{itemize}
+    \item \textbf{Dispatcher}: Se almacenan los usuarios que están siendo atendidos hasta que las consultas son completamente recibidas, en caso de fallo, al reincorporarse se propagan los paquetes de abort asociados a estas consultas corruptas.
+    \item \textbf{Group/Join/Result Node}: Se almacenan los resultados parciales acumulados, en caso de fallo, al reincorporarse se continúa el procesamiento desde el último estado.
+\end{itemize}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.50\textwidth]{img/vista_logica/clases_query_state_storage.pdf}
+    \caption{Diagrama de clases del State Storage}
+\end{figure}
+
+\textbf{Result Storage}: Repositorio persistente donde se guardan los resultados finales de cada consulta, asociados al cliente\_id.
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.70\textwidth]{img/vista_logica/clases_results_storage.pdf}
     \caption{Diagrama de clases del almacenamiento de resultados}
 \end{figure}
+
+\textbf{Supervisor}: Componente encargado de monitorear el estado de los componentes del sistema mediante un algoritmo de heartbeat y reiniciarlos ante fallos. El propio supervisor está replicado en múltiples instancias para garantizar disponibilidad. La coordinación entre instancias se resuelve mediante un algoritmo de elección líder.
 
 \textbf{Task Queue}: Cola de mensajes que intermedia entre los distintos nodos y asegura la distribución ordenada de las tareas de procesamiento.
 

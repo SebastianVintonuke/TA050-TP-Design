@@ -1,0 +1,69 @@
+@startuml
+
+skinparam backgroundColor white
+skinparam classBorderColor black
+skinparam classBackgroundColor white
+skinparam ArrowColor #121617
+skinparam defaultFontColor #121617
+
+skinparam SequenceLifelineBorderColor #121617
+skinparam SequenceActivationBorderColor #121617
+
+skinparam EntityBorderColor #44a0de
+skinparam ControlBackgroundColor #a9d4f1
+skinparam ParticipantBackgroundColor #a9d4f1
+skinparam QueueBackgroundColor #a9d4f1
+skinparam RectangleBackgroundColor #a9d4f1
+skinparam DataBaseBackgroundColor #a9d4f1
+
+skinparam ControlBorderColor #44a0de
+skinparam ParticipantBorderColor #44a0de
+skinparam QueueBorderColor #44a0de
+skinparam RectangleBorderColor #44a0de
+skinparam DataBaseBorderColor #44a0de
+
+skinparam NoteBorderColor #cccccc
+skinparam NoteBackgroundColor #fff7cc
+
+participant QueueGroupby
+participant GroupbyNode
+database StateStorage
+
+== Recovery Phase ==
+
+GroupbyNode -> StateStorage : load_state()
+StateStorage --> GroupbyNode : query_state
+
+loop Por cada query_state
+    GroupbyNode -> StateStorage : check_integrity(query_state)
+    alt Hay cambios comiteados sin aplicar
+        StateStorage -> StateStorage : apply_committed_changes()
+    else Hay cambios sin commitear
+        StateStorage -> StateStorage : discard_not_committed_changes()
+    end
+    StateStorage --> GroupbyNode : last_valid_state
+end
+
+== Normal Phase ==
+
+QueueGroupby -> GroupbyNode : push(first_packet)
+GroupbyNode -> StateStorage : update_time(query_id, packet_id)
+GroupbyNode -> GroupbyNode : calculate_new_state()
+GroupbyNode -> StateStorage : add_changes(new_state)
+
+GroupbyNode -> StateStorage : commit_changes()
+note right of StateStorage
+  Actualiza timestamp
+  de cambios comiteados
+end note
+
+GroupbyNode -> StateStorage : push_changes()
+note right of StateStorage
+  Cada vez que aplica un cambio
+  lo quita de los comiteados
+end note
+
+GroupbyNode -> QueueGroupby : ack_msg(packet_id)
+GroupbyNode -> StateStorage : reset_packet_id()
+
+@enduml

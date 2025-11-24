@@ -17,13 +17,16 @@ class DispatcherProtocol {
     + __init__(a_socket)
     + close_with(closure_to_close)
     + handle_requests()
+    + send_abort_for(user_id)
     - __join_pending_threads(model)
     - __send_task_to_select_transaction(user_id, model, batch)
     - __send_task_to_select_transaction_item(user_id, model, batch)
     - __send_task_to_join_menu_item(user_id, model, batch)
     - __send_task_to_join_user(user_id, model, batch)
     - __send_task_to_join_store(user_id, model, batch)
-    - __send_EOF_for(user_id, model, counter)
+    - __send_eof_for(user_id, model, counter)
+    - __add_request_register_to_local_storage(user_id)
+    - __remove_request_register_from_local_storage(user_id)
 }
 
 @enduml

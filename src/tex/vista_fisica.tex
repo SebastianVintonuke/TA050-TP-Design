@@ -54,9 +54,18 @@ En la consulta 4 también se reutiliza el resultado parcial de la consulta 1, co
 
 \subsection{Despliegue}
 
-El \textbf{Servidor}, el \textbf{Middleware} y el almacenamiento de \textbf{Resultados} se despliegan como componentes independientes. Para aumentar la capacidad de procesamiento de solicitudes concurrentes, se permite el despliegue de múltiples instancias de \textbf{Dispatcher}.
-Las \textbf{Select Task Queues} y los \textbf{Select Nodes} también se despliegan de manera desacoplada, dado que cualquier nodo puede consumir tareas de cualquier cola.
-En contraste, los nodos que requieren mantener estado, como \textbf{Join} y \textbf{Group}, deben desplegarse junto con su cola y su almacenamiento asociados, a fin de preservar la coherencia del procesamiento. De manera análoga, los \textbf{Result Nodes} se despliegan con su cola correspondiente. En estos últimos dos casos, la asociación estricta con una cola garantiza la consistencia en la asignación de consultas a nodos específicos.
+El \textbf{Servidor} y el \textbf{Middleware} se despliegan como componentes independientes.
+
+Para aumentar la capacidad de procesamiento de solicitudes concurrentes, se permite el despliegue de múltiples instancias de \textbf{Dispatcher} y para aumentar la capacidad de almacenamiento, se permite el despliegue de múltiples instancias de \textbf{Result Storage}.
+
+La \textbf{Select Task Queues} y los \textbf{Select Nodes} se despliegan de manera desacoplada, dado que cualquier nodo puede consumir tareas de la cola.
+
+En contraste, los nodos que requieren mantener estado, como \textbf{Join}, \textbf{Group} y \textbf{Result Node}, deben desplegarse junto con su cola y su almacenamiento asociados, a fin de preservar la coherencia del procesamiento.
+
+En este caso, la asociación estricta con una cola garantiza la consistencia en la asignación de consultas a nodos específicos.
+De forma similar, cada \textbf{Result Storage} se despliega junto con su cola asociada y la asociación estricta con un usuario mediante el hash de su id, perimite asociar cada usuario con sus resultados.
+
+Finalmente los \textbf{Supervisor} se despliegan con copias redundantes pero con un lider único para garantizar disponibilidad y al mismo tiempo consistencia.
 
 \begin{figure}[H]
     \centering

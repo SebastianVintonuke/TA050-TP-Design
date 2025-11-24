@@ -1,0 +1,49 @@
+@startuml
+
+skinparam backgroundColor white
+skinparam classBorderColor black
+skinparam classBackgroundColor white
+skinparam ArrowColor black
+skinparam defaultFontColor black
+
+class QueryStateStorage {
+    - base: Path
+    - manager: BaseStateManager
+    - metadata: Path
+    - states: Path
+    - packets: Path
+    - not_finished: Path
+    - not_applied: Path
+    - applied: Path
+
+    + __init__(base_path: Path, state_manager: BaseStateManager)
+    + _ensure_dirs()
+    + _metadata_file(query_id)
+    + _commit_file(query_id)
+    + _packet_file(folder, query_id, packet_id)
+    + _state_file(query_id, packet_id)
+    + _get_commit_timestamp(query_id)
+    + _update_commit_timestamp(query_id)
+    + _load_query_state(query_id, packet_id)
+    + load_states()
+    + check_integrity()
+    + register_query(query_id, metadata, initial_packet_id)
+    + write_changes(query_id, packet_id, changes)
+    + commit_changes(query_id)
+    + get_new_state(prev_state, changes)
+    + push_changes(query_id, packet_id, new_state, count_msgs)
+    + unregister_packet(tag)
+}
+
+class BaseStateManager {
+    + serialize_initial_state(metadata)
+    + apply_changes(state, changes)
+    + serialize_state(state)
+    + serialize_changes(changes)
+    + deserialize_state(state_bytes)
+    + deserialize_changes(changes_bytes)
+}
+
+QueryStateStorage ..> BaseStateManager
+
+@enduml
