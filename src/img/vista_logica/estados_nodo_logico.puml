@@ -1,0 +1,60 @@
+@startuml
+
+!define STATE_DOWN_COLOR #FFB6C1
+!define STATE_UP_COLOR #90EE90
+!define STATE_SUSPECT_COLOR #FFD700
+
+skinparam backgroundColor #FFFFFF
+skinparam state {
+  BackgroundColor<<DOWN>> STATE_DOWN_COLOR
+  BackgroundColor<<UP>> STATE_UP_COLOR
+  BackgroundColor<<SUSPECT>> STATE_SUSPECT_COLOR
+  BorderColor #333333
+  ArrowColor #333333
+}
+
+[*] --> DOWN : LogicNode initialization
+
+state "DOWN" as DOWN <<DOWN>> {
+  DOWN : **State**: Not operational
+  DOWN : **Inactivity**: >= HARD_THRESHOLD (10 ticks)
+  DOWN : 
+  DOWN : **Actions**:
+  DOWN : • RestartManager schedules restart
+  DOWN : • Exponential backoff (2s, 4s, 8s, 16s, 30s)
+}
+
+state "UP" as UP <<UP>> {
+  UP : **State**: Healthy
+  UP : **Inactivity**: < SOFT_THRESHOLD (5 ticks)
+  UP : 
+  UP : **Actions**:
+  UP : • Reset inactivity counter
+  UP : • Normal operation
+}
+
+state "SUSPECT" as SUSPECT <<SUSPECT>> {
+  SUSPECT : **State**: May be failing
+  SUSPECT : **Inactivity**: >= SOFT_THRESHOLD
+  SUSPECT : **Inactivity**: < HARD_THRESHOLD
+  SUSPECT : 
+  SUSPECT : **Actions**:
+  SUSPECT : • Sends NODE_ALIVE_CHECK
+  SUSPECT : • Wait for response
+}
+
+DOWN --> UP : **Trigger**: First heartbeat received\n**Event**: register_heartbeat(node_id, ts)\n**Action**: mark_up(node_id)
+
+UP --> SUSPECT : **Trigger**: No heartbeat for SOFT_THRESHOLD\n**Event**: tick() x 5 \n**Action**: send_check(node_id)
+
+SUSPECT --> UP : **Trigger**: Node responds to check\n**Event**: NODE_ALIVE_RESPONSE received\n**Action**: mark_up(node_id)
+
+SUSPECT --> DOWN : **Trigger**: No response for HARD_THRESHOLD\n**Event**: tick() x 10 \n**Action**: mark_down(node_id)
+
+UP --> UP : **Event**: Heartbeat received\n**Action**: inactivity = 0
+
+SUSPECT --> SUSPECT : **Event**: tick() without response\n**Action**: inactivity++
+
+DOWN --> DOWN : **Event**: Restart failed\n**Action**: Backoff delay++
+
+@enduml

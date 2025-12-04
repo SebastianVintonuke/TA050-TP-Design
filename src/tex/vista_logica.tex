@@ -152,6 +152,8 @@
     \caption{Diagrama de clases de los protocolos de bajo nivel}
 \end{figure}
 
+\subsection{Tolerancia a fallos}
+
 \begin{figure}[H]
     \centering
     \includegraphics[width=1\textwidth]{img/vista_logica/clases_supervisor.png}
@@ -199,3 +201,49 @@ En cuanto a la relacion entre estos componentes, estan acoplados de la siguiente
 \end{itemize}
 
 El resultado es un sistema modular, eficiente y resiliente frente a fallos.
+
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{img/vista_logica/estados_nodo_logico.png}
+    \caption{Diagrama de estados posibles de un nodo}
+\end{figure}
+
+El \textit{Supervisor} líder mantiene, para cada nodo, una máquina de estados finitos (FSM) que modela su salud y decide cuándo sospechar una falla o declararlo caído. Sobre esta FSM se apoyan el envío de heartbeats, los checks activos y los reinicios automáticos.
+
+
+Cada nodo puede estar en uno de tres estados:
+
+\begin{itemize}
+    \item \textbf{DOWN}: El nodo se considera no operativo. Es el estado inicial y también el estado al que se pasa cuando se supera el umbral mas alto de inactividad (\texttt{HARD\_THRESHOLD}). En este estado, el \texttt{RestartManager} puede programar reinicios controlados del contenedor.
+    
+    \item \textbf{UP}: El nodo está saludable y envía heartbeats periódicos al supervisor. Mientras el contador de inactividad se mantiene por debajo del umbral mas bajo (\texttt{SOFT\_THRESHOLD}), el nodo permanece en este estado.
+    
+    \item \textbf{SUSPECT}: El supervisor sospecha que el nodo puede estar fallando. Se alcanza cuando el contador de inactividad se encuentra entre el mas alto y mas bajo. En este estado se disparan checks activos (\texttt{NODE\_ALIVE\_CHECK}) para confirmar si el nodo sigue vivo antes de marcarlo definitivamente como DOWN.
+\end{itemize}
+
+
+Las transiciones entre estos estados se basan en heartbeats recibidos y en el número de ticks sin actividad:
+
+\begin{itemize}
+    \item \textbf{DOWN $\rightarrow$ UP}: Primer \texttt{heartbeat} válido recibido para ese nodo. Se resetea el contador de inactividad y se marca el nodo como operativo (\texttt{mark\_up}).
+
+    \item \textbf{UP $\rightarrow$ SUSPECT}: No se reciben heartbeats durante \texttt{SOFT\_THRESHOLD} ticks. La llamada periódica a \texttt{tick()} incrementa el contador y, al cruzar el umbral mas bajo, se emite una acción \texttt{send\_check} para enviar un \texttt{NODE\_ALIVE\_CHECK}.
+
+    \item \textbf{SUSPECT $\rightarrow$ UP}: El nodo responde (directa o indirectamente) con un \texttt{NODE\_ALIVE\_RESPONSE}. Se resetea la inactividad y se limpia el estado sospechoso (\texttt{mark\_up}).
+
+    \item \textbf{SUSPECT $\rightarrow$ DOWN}: No hay respuesta dentro de \texttt{HARD\_THRESHOLD} ticks totales. \texttt{tick()} cruza el umbral mas alto y se emite \texttt{mark\_down}, que puede desencadenar un reinicio vía \texttt{RestartManager}.
+\end{itemize}
+
+
+Algunos parámetros clave que definen la FSM son:
+
+\begin{itemize}
+    \item \texttt{HEARTBEAT\_TICK}: intervalo entre ejecuciones de \texttt{tick()}.
+    \item \texttt{SOFT\_THRESHOLD}: número de ticks sin heartbeat a partir del cual el nodo pasa a estado \texttt{SUSPECT}.
+    \item \texttt{HARD\_THRESHOLD}: número de ticks sin heartbeat a partir del cual el nodo pasa a estado \texttt{DOWN}.
+    \item \texttt{heartbeat\_interval}: intervalo de envío de heartbeats por parte de los nodos.
+    \item Parámetros de reinicio (\texttt{MAX\_RESTART\_ATTEMPTS}, \texttt{RESTART\_WINDOW}) que limitan y espacia los reinicios cuando un nodo permanece en \texttt{DOWN}.
+\end{itemize}
+
+En conjunto, esta máquina de estados permite distinguir entre fallos transitorios (resueltos en estado \texttt{SUSPECT}) y caídas reales (estado \texttt{DOWN}), integrando detección, validación y recuperación automática de nodos.
