@@ -1,0 +1,88 @@
+@startuml
+
+  class Supervisor {
+    - supervisor_id:
+    - supervisor_peers: Dict
+    - supervisor_port: int
+    - recv_sock: socket
+    - send_sock: socket
+    - receiver: Thread
+    - tick_thread: Thread
+    - replication_thread: Thread
+    - _state_replication_loop(): void
+    - _tick_loop(): void
+    - _recv_loop(): void
+    + handle_node_down(node_id: str): void
+    + check_node_health(node_id: str): void
+    + mark_node_active(node_id: str): void
+  }
+
+  class SupervisorCore {
+    - soft_threshold: int
+    - hard_threshold: int
+    - inactivity: Dict[str, int]
+    - state: Dict[str, str]
+    - last_timestamp: Dict[str, float]
+    - check_sent: Dict[str, bool]
+    + register_heartbeat(node_id: str, timestamp: float): List<Action>
+    + tick(): List<Action>
+  }
+
+  class RestartManager {
+    - docker_client: docker.DockerClient
+    - _restart_threads: List[Thread]
+    - _do_restart_after_delay(node_id: str, delay: float): void
+    + restart_node_with_backoff(node_id: str): void
+  }
+
+  enum SupervisorState {
+    FOLLOWER
+    CANDIDATE
+    LEADER
+  }
+
+  class BullyElection {
+    - supervisor_peers: Dict
+    - current_leader: int
+    - listener: Thread
+    - leader_monitor: Thread
+    - _start_election(): void
+    - _become_leader(): void
+    - _handle_message(): void
+    - _leader_alive_loop(): void
+    - _monitor_leader_loop(): void
+    - _discover_existing_leader(): void
+    + is_leader(): bool
+    + get_leader_id(): int
+    + trigger_election(): void
+  }
+
+  class Healthchecker {
+    - logic_node_id: str
+    - supervisors: List[Dict]
+    - current_leader: Dict
+    - sender: socket
+    - receiver: socket
+    - _heartbeat_thread: Thread
+    - _check_thread: Thread
+    - _discover_leader(): bool
+    - _heartbeat_loop(): void
+    - _send_heartbeat_to_leader(): bool
+    - _check_listener_loop(): void
+    + run(): void
+  }
+
+  Supervisor *-- SupervisorCore
+  Supervisor *-- RestartManager
+  Supervisor *-- BullyElection
+
+  BullyElection ..> SupervisorState
+
+class LogicNode {
+}
+
+LogicNode *-- Healthchecker
+Healthchecker "NodeAliveResponse" --> Supervisor
+Healthchecker <-- Supervisor : "NodeAliveCheck"
+
+@enduml

@@ -151,3 +151,51 @@
     \includegraphics[width=0.55\textwidth]{img/vista_logica/clases_protocol_base.pdf}
     \caption{Diagrama de clases de los protocolos de bajo nivel}
 \end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{img/vista_logica/clases_supervisor.png}
+    \caption{Diagrama de clases del Supervisor}
+\end{figure}
+
+El anterior diagrama presenta los componentes principales del mecanismo de tolerancia a fallos. Cada uno cumple un rol bien definido en el monitoreo de salud, detección de caídas, recuperación automática y coordinación entre supervisores.
+
+\texttt{Supervisor} es la entidad responsable de monitorear los healthcheckers, detectar fallos y coordinar reinicios de nodos. Mantiene hilos dedicados a la recepción de heartbeats y al avance del tiempo lógico. Cuando hay más de un supervisor en ejecución, también gestiona la elección de líder.
+
+\texttt{SupervisorCore} encapsula la lógica pura de detección de fallos:
+\begin{itemize}
+    \item Estados por nodo: \texttt{UP}, \texttt{SUSPECT}, \texttt{DOWN}
+    \item Contadores de inactividad (ticks sin heartbeat)
+\end{itemize}
+
+Devuelve acciones lógicas como \texttt{mark\_up}, \texttt{send\_check} y \texttt{mark\_down}.
+
+\texttt{RestartManager} es responsable de recuperar nodos caídos utilizando Docker. Aplica una política controlada de reinicios en hilos independientes y evita ciclos infinitos mediante una ventana deslizante de intentos.
+
+
+\texttt{BullyElection} implementa el algoritmo Bully para garantizar que exista un único supervisor líder. El líder envía mensajes periódicos de \texttt{ALIVE}; si dejan de recibirse, se inicia una nueva elección considerando siempre como ganador al supervisor con ID mayor.
+
+
+El \texttt{Healthchecker} corre en cada nodo de negocio y envía heartbeats al supervisor líder. Además, responde a verificaciones activas (\texttt{NODE\_ALIVE\_CHECK}) cuando se sospecha su caída. Si el líder deja de responder, ejecuta un proceso de descubrimiento del nuevo supervisor líder.
+
+
+
+Dos protocolos soportan la comunicación:
+\begin{itemize}
+    \item \textbf{HeartbeatProtocol}: intercambio de heartbeats y checks entre nodos y supervisor.
+    \item \textbf{LeaderElectionProtocol}: mensajes del algoritmo Bully y consultas \textit{¿Quién es el líder?}
+\end{itemize}
+
+Todos los mensajes son binarios para mayor eficiencia y compatibilidad con UDP.
+
+
+
+En cuanto a la relacion entre estos componentes, estan acoplados de la siguiente forma:
+
+\begin{itemize}
+    \item \texttt{Supervisor} compone a \texttt{SupervisorCore}, \texttt{RestartManager} y \texttt{BullyElection}.
+    \item Cada nodo tiene un \texttt{Healthchecker} que se comunica únicamente con el supervisor líder.
+    \item Las acciones emitidas por \texttt{SupervisorCore} pueden resultar en reinicios automáticos gestionados por \texttt{RestartManager}.
+\end{itemize}
+
+El resultado es un sistema modular, eficiente y resiliente frente a fallos.
