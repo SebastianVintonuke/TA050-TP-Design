@@ -1,0 +1,45 @@
+@startuml
+
+!define SUPERVISOR_COLOR #ca87ebff
+!define MESSAGE_COLOR #00ff77ff
+
+skinparam backgroundColor #FFFFFF
+skinparam sequenceMessageAlign center
+skinparam responseMessageBelowArrow true
+
+participant "**Supervisor1**\nID=1 (Lower)" as S1 SUPERVISOR_COLOR
+participant "**Supervisor2**\nID=2 (Higher)" as S2 SUPERVISOR_COLOR
+participant "**LogicNode**" as Workers MESSAGE_COLOR
+
+== Escenario: Supervisor2 lider crashea ==
+S2 -[#red]> S2: <font color=red>**CRASHES**</font>
+deactivate S2
+
+S1 -> S2: **ALIVE**
+note left
+Timeout waiting for response
+Detect leader failure
+current_leader = None
+end note
+
+S1 -> S1: trigger_election()
+
+S1 -> S2: **ELECTION**
+note right
+  Broadcast a todos los supervisores
+  Election timeout
+  No OK received
+  **won the election**
+end note
+
+S1 -> S1: _on_become_leader()
+
+S1 -> Workers: **COORDINATOR**
+
+Workers -> S1: **WHO_IS_LEADER**
+S1 --> Workers: **LEADER_INFO**
+
+S1 -> Workers: **NODE_ALIVE_CHECK**
+Workers -> S1: **NODE_ALIVE_RESPONSE**
+
+@enduml

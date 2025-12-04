@@ -1,0 +1,85 @@
+@startuml 
+
+!define SUPERVISOR_COLOR #ca87ebff
+!define HEALTHCHECKER_COLOR #02ba02ff
+!define MIDDLEWARE_COLOR #00ff77ff
+
+skinparam backgroundColor #FFFFFF
+skinparam sequenceMessageAlign center
+skinparam responseMessageBelowArrow true
+
+participant "**LogicNode**" as Node MIDDLEWARE_COLOR
+participant "**Healthchecker**" as HC HEALTHCHECKER_COLOR
+participant "**Supervisor1**\n(Follower)" as S1 SUPERVISOR_COLOR
+participant "**Supervisor2**\n(Leader)" as S2 SUPERVISOR_COLOR
+
+== Fase 1: Descubrimiento de lider ==
+
+activate Node
+Node -> HC: start()
+activate HC
+
+HC -> HC: _discover_leader()
+
+HC -> S1: **WHO_IS_LEADER**
+
+S1 -> S1: BullyElection.actual_leader()
+  
+S1 --> HC: **LEADER_INFO**\n2
+
+HC -> HC: current_leader = supervisor2
+
+== Fase 2: Heartbeat ==
+
+loop cada 2s
+  HC -> S2: **NODE_ALIVE_RESPONSE**\n(node_id, timestamp)
+  
+  S2 -> S2: SupervisorCore.register_heartbeat(node_id, timestamp)
+  note right S2
+    State: **DOWN → UP**
+  end note
+  
+  S2 --> HC: **HEARTBEAT_ACK**
+end
+
+== Caso 3.1: Health Check ==
+loop 5 veces sin heartbeat
+S2 -> S2: tick()
+  note right S2
+    State: **UP → SUSPECT** 
+  end note
+S2 -> HC: **NODE_ALIVE_CHECK**
+end
+
+HC --> S2: **NODE_ALIVE_RESPONSE**\n(node_id, timestamp)
+
+S2 -> S2: SupervisorCore.register_heartbeat(node_id, timestamp)
+  note right S2
+    State: **SUSPECT → UP**  
+  end note
+
+S2 --> HC: **HEARTBEAT_ACK**
+
+== Caso 3.2: Falla de nodo y reinicio ==
+
+Node -[#red]> Node: <font color=red>**CRASHES**</font>
+deactivate HC
+deactivate Node
+
+loop 10 veces sin heartbeat
+S2 -> S2: tick()
+  note right S2
+    State: **UP → SUSPECT → DOWN**
+  end note
+S2 -> HC: **NODE_ALIVE_CHECK**
+end
+
+S2 -> S2: RestartManager.restart_node_with_backoff(node)
+
+S2 -> Node: docker restart
+
+activate Node
+Node -> HC: start() → **Fase 1**
+activate HC
+
+@enduml

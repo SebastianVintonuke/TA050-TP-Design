@@ -117,3 +117,177 @@ Notese que, si bien el ejemplo utiliza el caso particular del \textbf{Groupby No
 En su lugar, emplea una interfaz de estado que define los mecanismos de serialización y deserialización.
 
 Esto permite que el \textbf{State Storage} sea utilizado por distintos componentes del sistema, cada uno declarando el estado que necesita persistir según la función que desempeña.
+
+
+\subsection{Eleccion de Lider: Bully}
+
+El algoritmo Bully asegura que el supervisor con mayor identificador actúe como líder del sistema. La siguiente secuencia ilustra el caso donde \textbf{Supervisor2} (ID=2) se reintegra mientras \textbf{Supervisor1} (ID=1) está funcionando como líder, y cómo se realiza la transición de liderazgo sin perder monitoreo ni estado.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{img/vista_de_procesos/diagrama_eleccion_lider.png}
+    \caption{Diagrama de secuencia: Ingresa un Supervisor de mayor ID que el lider}
+\end{figure}
+
+Hay dos supervisores:
+\begin{itemize}
+    \item \textbf{Supervisor1}: ID = 1 (prioridad menor), inicialmente líder.
+    \item \textbf{Supervisor2}: ID = 2 (prioridad mayor), se reinicia y vuelve al cluster.
+\end{itemize}
+
+Al arrancar, Supervisor2 no asume nada y comienza en estado \texttt{FOLLOWER}.
+
+
+Antes de disparar una elección, Supervisor2 pregunta quién es el líder:
+\begin{itemize}
+    \item Envía \texttt{WHO\_IS\_LEADER} a sus peers.
+    \item Supervisor1 responde indicando que es el líder actual.
+\end{itemize}
+
+Con esa información, Supervisor2 compara IDs:
+si el \texttt{leader\_id} recibido es menor que su propio ID, decide desafiar al líder y dispara el algoritmo Bully; si fuera mayor o igual, simplemente acepta al líder existente.
+
+
+Cuando Supervisor2 decide desafiar:
+\begin{itemize}
+    \item Inicia una elección (\texttt{trigger\_election()}), enviando \texttt{ELECTION} a supervisores con ID mayor (en este caso no hay).
+    \item Supervisor1, al recibir \texttt{ELECTION} desde un ID mayor, responde y deja de ser líder (pasa a \texttt{FOLLOWER} y desactiva su monitoreo).
+    \item Tras un timeout sin respuestas de IDs mayores, Supervisor2 se proclama líder.
+\end{itemize}
+
+
+Al convertirse en líder, Supervisor2:
+\begin{itemize}
+    \item Cambia su estado a \texttt{LEADER} y activa el monitoreo de nodos.
+    \item Recupera el estado de los nodos, ya sea desde el líder anterior o usando el estado replicado.
+    \item Marca los nodos heredados como candidatos a checkear (pasando temporalmente a \texttt{SUSPECT}) y les envía checks activos para confirmar que siguen vivos.
+\end{itemize}
+
+De esta forma se evita asumir ciegamente un estado desactualizado y se revalida rápidamente qué nodos están realmente operativos.
+
+
+Finalmente, el nuevo líder:
+\begin{itemize}
+    \item Anuncia su liderazgo mediante mensajes de \texttt{COORDINATOR} a otros supervisores.
+    \item Continúa replicando periódicamente el estado para que un futuro cambio de líder pueda reutilizar esa información.
+\end{itemize}
+
+
+Este protocolo garantiza que:
+\begin{itemize}
+    \item Nunca haya dos líderes simultáneos (el líder anterior se desactiva antes de que el nuevo comience a monitorear).
+    \item El líder con mayor ID sea quien coordina, siempre que esté disponible.
+    \item Un supervisor que se reinicia pueda integrarse sin romper el servicio, desafiando al líder actual sólo cuando corresponde.
+    \item La transición de liderazgo preserve el estado de los nodos y lo revalide rápidamente, manteniendo la funcionalidad de monitoreo y recuperación ante fallos.
+\end{itemize}
+
+
+En la siguiente secuencia quisimos detallar qué ocurre cuando el \textit{supervisor líder} se cae y cómo el sistema recupera automáticamente un nuevo líder usando el algoritmo Bully.
+
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{img/vista_de_procesos/diagrama_eleccion_lider_crashea.png}
+    \caption{Diagrama de secuencia: Cambio de lider por caida}
+\end{figure}
+
+
+En el estado inicial hay:
+\begin{itemize}
+    \item Un \textbf{supervisor líder} (ID más alto) que monitorea los nodos.
+    \item Un \textbf{supervisor followers} que conoce quién es el líder actual.
+    \item \textbf{LogicNodes} que envían heartbeats al líder.
+\end{itemize}
+
+
+El follower ejecuta un bucle de monitoreo del líder. Periódicamente verifica si sigue recibiendo señales de vida del líder (mensajes \texttt{ALIVE} o equivalente).  
+Si durante un intervalo configurado no llega ninguna señal, el follower asume que el líder ha fallado y limpia \texttt{current\_leader}.
+
+
+
+Al detectar el fallo, el follower dispara \texttt{trigger\_election()}:
+\begin{itemize}
+    \item Envía mensajes \texttt{ELECTION} a todos los supervisores con ID mayor.
+    \item Si alguno responde, ese supervisor de mayor ID continuará la elección y eventualmente se proclamará líder.
+    \item Si nadie responde (todos los IDs mayores están caídos), el follower gana por defecto.
+\end{itemize}
+
+Tras un \texttt{election\_timeout} sin respuestas de IDs mayores, el supervisor que inició la elección se convierte en nuevo líder.
+
+
+Cuando un supervisor se proclama líder:
+\begin{itemize}
+    \item Cambia su estado interno a \texttt{LEADER} y actualiza \texttt{current\_leader}.
+    \item Ejecuta un callback en \texttt{Supervisor} (\texttt{on\_become\_leader()}) para activar el monitoreo de nodos.
+    \item A partir de este momento, comienza a enviar mensajes de \texttt{ALIVE} a los demás supervisores para que sepan quién es el líder actual.
+\end{itemize}
+
+
+
+Los LogicNode siguen enviando heartbeats al líder anterior hasta que dejan de recibir respuestas. Cuando detectan que el líder no responde:
+\begin{itemize}
+    \item Ejecutan un proceso de descubrimiento (\texttt{\_discover\_leader()}).
+    \item Envían \texttt{WHO\_IS\_LEADER} a los supervisores.
+    \item El nuevo líder responde con \texttt{LEADER\_INFO}, indicando su identidad y dirección.
+    \item Los Nodos actualizan su \texttt{current\_leader} y redirigen los siguientes heartbeats al nuevo líder.
+\end{itemize}
+
+
+El diagrama de secuencia muestra cómo:
+\begin{enumerate}
+    \item El fallo del líder se detecta automáticamente por timeout.
+    \item El algoritmo Bully elige un nuevo líder.
+    \item Los Nodos redescubren al líder y retoman el envío de heartbeats.
+\end{enumerate}
+
+De esta forma, el sistema mantiene la funcionalidad de monitoreo y tolerancia a fallos incluso ante la caída completa del supervisor líder.
+
+\subsection{Protocolo de comunicacion entre Healthchecker y Supervisor}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{img/vista_de_procesos/diagrama_secuencia_protocolos.png}
+    \caption{Diagrama de secuencia: Protocolo de Healthchecker y Supervisor}
+\end{figure}
+
+El anterior diagrama describe cómo el \textbf{Healthchecker} de cada nodo se comunica con el \textbf{Supervisor líder} para monitorear disponibilidad y recuperar fallos.
+
+Cuando un nodo inicia, no sabe quién es el líder. El Healthchecker envía \texttt{WHO\_IS\_LEADER} y un supervisor responde \texttt{LEADER\_INFO}. Esto permite:
+\begin{itemize}
+    \item Redirigir heartbeats al supervisor correcto.
+    \item Evitar elecciones innecesarias.
+\end{itemize}
+
+
+Una vez que conoce al líder, el Healthchecker envía periódicamente \texttt{NODE\_ALIVE\_RESPONSE}.  
+El líder:
+\begin{itemize}
+    \item Registra la actividad del nodo y lo marca \texttt{UP}.
+    \item Responde con \texttt{HEARTBEAT\_ACK}.
+\end{itemize}
+
+
+Si el líder deja de recibir heartbeats por un período configurado, el nodo pasa a \texttt{SUSPECT}.  
+Para descartar falsos positivos, el supervisor envía \texttt{NODE\_ALIVE\_CHECK}:
+\begin{itemize}
+    \item Si el worker responde, vuelve a \texttt{UP} sin reinicios.
+    \item Se evita una recuperación innecesaria.
+\end{itemize}
+
+
+Si el nodo no responde dentro del umbral mas alto:
+\begin{itemize}
+    \item Se marca como \texttt{DOWN}.
+    \item El \textbf{RestartManager} reinicia su contenedor.
+    \item Cuando el nodo vuelve, repite la fase de \textbf{Descubrimiento de líder} y se reincorpora automáticamente.
+\end{itemize}
+
+
+Este protocolo combina:
+\begin{itemize}
+    \item Detección rápida de fallos reales.
+    \item Protección ante falsos positivos.
+    \item Recuperación automática.
+\end{itemize}
+
+Asegurando que el sistema mantenga siempre monitoreo activo y disponibilidad del servicio aún frente a fallos de nodos.

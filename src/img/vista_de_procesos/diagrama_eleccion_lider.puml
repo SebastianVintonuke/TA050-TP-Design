@@ -1,0 +1,73 @@
+@startuml
+
+!define SUPERVISOR_COLOR #ca87ebff
+!define MESSAGE_COLOR #00ff77ff
+
+skinparam backgroundColor #FFFFFF
+skinparam sequenceMessageAlign center
+skinparam responseMessageBelowArrow true
+
+participant "**Supervisor1**\nID=1 (Lower)" as S1 SUPERVISOR_COLOR
+participant "**Supervisor2**\nID=2 (Higher)" as S2 SUPERVISOR_COLOR
+participant "**LogicNode**" as Workers MESSAGE_COLOR
+
+== Escenario: Supervisor2 reinicia mientras Supervisor1 es lider ==
+
+S2 -> S2: initialize Bully
+note right
+currentLeader = None
+end note
+
+S2 -> S1: **WHO_IS_LEADER**
+
+S1 --> S2: **I_AM_LEADER**\nleader_id
+
+S2 -> S2: trigger_election()
+note right
+leader_id (1) < my_id (2)
+end note
+
+S2 -> S1: **ELECTION**
+
+S1 --> S2: **OK**
+note left
+Received ELECTION 
+from higher ID
+end note
+
+S1 -> S1: _on_lose_leadership()
+note left
+state = **FOLLOWER**
+Stop monitoring
+end note
+
+S2 -> S2: wait
+note right
+election timeout = 3s
+No ELECTION from higher nodes
+**won the election**
+end note
+
+S2 -> S2: _on_become_leader()
+note right
+state = **LEADER**
+end note
+
+S2 -> S1: **STATE_REQUEST**
+
+S1 --> S2: **STATE_RESPONSE**\nlogic_nodes_states
+
+S2 -> S1: **COORDINATOR**
+S2 -> Workers: **COORDINATOR**
+note right
+nodes recon change of leadership
+end note
+
+S2 -> Workers: **NODE_ALIVE_CHECK**
+S2 <-- Workers: **NODE_ALIVE_RESPONSE**
+
+
+S1 -> S2: **STATE_REQUEST**
+S2 --> S1: **STATE_RESPONSE**\nlogic_nodes_states
+
+@enduml
